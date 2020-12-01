@@ -1,0 +1,22 @@
+
+// ATTNode v3 Onboard LED is on PIN_PA7
+#define LED_PIN PIN_PA7
+
+// Define which Sensor is installed
+#define HAS_BME280
+
+// How many Minutes to sleep between Measuring/Sending
+// Actual Sleep Time is SLEEP_TIME*2*32 Seconds due to the 32s sleep intervals of the ATTiny3216
+#define SLEEP_TIME 10
+
+// Specify TTN EU Bandplan and LoRa Chip for the LMIC
+// See LMIC documentation / project_config.h for more options
+#define CFG_eu868 1
+#define CFG_sx1276_radio 1
+
+// Keys for OTAA Mode
+// APPEUI and DEVEUI from TTN, LSB!
+static const u1_t PROGMEM APPEUI[8]={ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+static const u1_t PROGMEM DEVEUI[8]={ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+// APPKey from TTN, MSB!
+static const u1_t PROGMEM APPKEY[16] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
