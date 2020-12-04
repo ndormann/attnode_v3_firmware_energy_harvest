@@ -4,6 +4,8 @@
 
 // Define which Sensor is installed
 #define HAS_BME280
+// #define HAS_SHT21
+// #define HAS_NO_SENSOR
 
 // How many Minutes to sleep between Measuring/Sending
 // Actual Sleep Time is SLEEP_TIME*2*32 Seconds due to the 32s sleep intervals of the ATTiny3216

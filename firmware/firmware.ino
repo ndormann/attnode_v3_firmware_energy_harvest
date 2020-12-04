@@ -16,6 +16,11 @@
 BME280 sensor;
 #endif
 
+#ifdef HAS_SHT21
+#include "SHT21.h"
+SHT21 sensor;
+#endif
+
 // Define some LMIC Callbacks and Variables
 void os_getArtEui (u1_t* buf) {
   memcpy_P(buf, APPEUI, 8);
@@ -111,7 +116,17 @@ void blink(uint8_t num) {
 // All Sensor Code and Data Preparation goes here
 void do_send(osjob_t* j) {
   // Prepare LoRa Data Packet
-  #ifdef HAS_BME280
+  #ifdef HAS_NO_SENSOR
+  struct lora_data {
+    uint8_t bat;
+  } __attribute ((packed)) data;
+  #elif defined HAS_SHT21
+  struct lora_data {
+    uint8_t bat;
+    int32_t temperature;
+    int32_t humidity;
+  } __attribute__ ((packed)) data;
+  #elif defined HAS_BME280
   struct lora_data {
     uint8_t bat;
     int32_t temperature;
@@ -121,7 +136,7 @@ void do_send(osjob_t* j) {
   #endif
   
   if (LMIC.opmode & OP_TXRXPEND) {
-    delay(10);
+    delay(1);
   } else {
     // Add Battery Voltage (0.2V Accuracy stored in 1 byte)
     uint32_t batv = readSupplyVoltage();
@@ -129,7 +144,11 @@ void do_send(osjob_t* j) {
     if (batv % 20 > 9)
       data.bat += 1;
 
-    #ifdef HAS_BME280
+    // Take Measurements depending on Sensor
+    #ifdef HAS_SHT21
+    data.temperature = (int32_t)(sensor.getTemperature()*100);
+    data.humidity    = (int32_t)(sensor.getHumidity()*100);
+    #elif defined HAS_BME280
     sensor.getData(&data.temperature, &data.pressure, &data.humidity);
     #endif
 
@@ -150,7 +169,7 @@ void setup()
 
   // Set RTC
   while (RTC.STATUS > 0) {}
-    RTC.CLKSEL = RTC_CLKSEL_INT1K_gc;
+  RTC.CLKSEL = RTC_CLKSEL_INT1K_gc;
   while (RTC.PITSTATUS > 0) {}
 
   // Initialize Sensor(s)

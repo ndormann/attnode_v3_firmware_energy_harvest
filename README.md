@@ -6,7 +6,7 @@ THIS IS STILL WORK IN PROGRESS!
 
 ## Configuration and Programming
 
-This is the Work in Progress Repository for ATTNode v3 compatible firmware. At the moment it supports LoRa communication using OTAA and a BME280 sensor, as well as deep sleep between measurements. 
+This is the Work in Progress Repository for ATTNode v3 compatible firmware. At the moment it supports LoRa communication using OTAA and a BME280 or SHT21 sensor, as well as deep sleep between measurements.
 
 As there is no PlatformIO Support for the ATTiny3216 yet, it is (for now) developed using Arduino IDE and the [MegaTinyCore](https://github.com/SpenceKonde/megaTinyCore). You also need to set the correct Settings for programming the ATTiny3216 in ArduionIDE. Here is a screenshot of the settings I use:
 
