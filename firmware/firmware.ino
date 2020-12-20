@@ -4,12 +4,17 @@
 #include <avr/interrupt.h>
 #include <SPI.h>
 #include <Wire.h>
+#include <EEPROM.h>
+
+// Keep Track of used EEPROM Addresses
+#define ADDR_SLP 0 // Sleep Interval, 2 Bytes
 
 // Use the local config.h for LMIC Configuration
 #define ARDUINO_LMIC_PROJECT_CONFIG_H config.h
 #include <lmic.h>
 #include <hal/hal.h>
 #include "config.h"
+#include "debug.h"
 
 #ifdef HAS_BME280
 #include "BME280.h"
@@ -42,7 +47,11 @@ const lmic_pinmap lmic_pins = {
 };
 
 // List of unused Pins - will be disabled for Power Saving
+#ifdef DEBUG
+const int disabledPins[] = {PIN_PB5, PIN_PB4, PIN_PB1, PIN_PB0, PIN_PC3, PIN_PC2, PIN_PC1, PIN_PC0};
+#else
 const int disabledPins[] = {PIN_PB5, PIN_PB4, PIN_PB3, PIN_PB2, PIN_PB1, PIN_PB0, PIN_PC3, PIN_PC2, PIN_PC1, PIN_PC0};
+#endif
 
 // ISR Routine for Sleep
 ISR(RTC_PIT_vect)
@@ -73,13 +82,28 @@ void onEvent(ev_t ev) {
     case EV_JOINED:
       // Disable LinkCheck
       LMIC_setLinkCheckMode(0);
+      DEBUG_PRINTLN("OTAA Join Succeeded");
       break;
     case EV_TXCOMPLETE:
+      // Check for Downlink
+      DEBUG_PRINTLN("LoRa Packet Sent");
+      if ((int)LMIC.dataLen == 2) {
+        // We got a Packet with the right size - lets assemble it into a uint16_t
+        DEBUG_PRINTLN("Received Downlink")
+        uint16_t tmpslp = (LMIC.frame[LMIC.dataBeg] << 8) | LMIC.frame[LMIC.dataBeg+1];
+        DEBUG_PRINT("Setting Sleep Time to: ");
+        DEBUG_PRINTLN(tmpslp);
+        sleep_time = tmpslp;
+        EEPROM.put(ADDR_SLP, tmpslp);
+      }
+
+      // Got to sleep for specified Time
+      DEBUG_PRINTLN("Going to Sleep");
+      for (uint16_t i = 0; i < sleep_time*2; i++)
+        sleep_32s();
+
       // Schedule Next Transmit
       do_send(&sendjob);
-      // Got to sleep for specified Time
-      for (int i = 0; i < int(SLEEP_TIME*2); i++)
-        sleep_32s();
       break;
   }
 }
@@ -152,17 +176,21 @@ void do_send(osjob_t* j) {
     sensor.getData(&data.temperature, &data.pressure, &data.humidity);
     #endif
 
-    // Queue Paket for Sending
+    // Queue Packet for Sending
+    DEBUG_PRINTLN("LoRa-Packet Queued");
     LMIC_setTxData2(1, (unsigned char *)&data, sizeof(data), 0);
   }
 }
 
 void setup()
 {
+  #ifdef DEBUG
+    Serial.begin(115200);
+  #endif
   // Initialize SPI and I2C
   Wire.begin();
   SPI.begin();
-  
+
   // Disable unused Pins (for power saving)
   for (int i = 0; i < (sizeof(disabledPins) / sizeof(disabledPins[0])) - 1; i++)
     pinMode(disabledPins[i], INPUT_PULLUP);
@@ -178,12 +206,25 @@ void setup()
   #endif
 
   // Setup LMIC
+  DEBUG_PRINT("Initializing LMIC...")
   os_init();
   LMIC_reset();                                  // Reset LMIC state and cancel all queued transmissions
   LMIC_setClockError(MAX_CLOCK_ERROR * 1 / 100); // Compensate for Clock Skew
   LMIC.dn2Dr = DR_SF9;                           // Downlink Band
   LMIC_setDrTxpow(DR_SF7, 14);                   // Default to SF7
+  DEBUG_PRINTLN("Done");
 
+  // Check if Sending Interval is set in EEPROM
+  // if we get 65535 (0xFFFF) EEPROM was not written
+  uint16_t tmpsleep = 0;
+  EEPROM.get(ADDR_SLP, tmpsleep);
+  if (tmpsleep < 65535) {
+    DEBUG_PRINT("Setting Sleep Time from EEPROM to ");
+    DEBUG_PRINTLN(tmpsleep);
+    sleep_time = tmpsleep;
+  }
+    
+  DEBUG_PRINTLN("Setup Finished");
   // Schedule First Send (Triggers OTAA Join as well)
   do_send(&sendjob);
 

@@ -2,19 +2,27 @@
 // ATTNode v3 Onboard LED is on PIN_PA7
 #define LED_PIN PIN_PA7
 
+// Enable Serial Debugging. Parameters for the Serial Port are 115200
+// #define DEBUG
+
 // Define which Sensor is installed
 #define HAS_BME280
 // #define HAS_SHT21
 // #define HAS_NO_SENSOR
 
-// How many Minutes to sleep between Measuring/Sending
+// How many minutes to sleep between Measuring/Sending
+// Since this is a 2-byte value internally, intervals between 1 and 65536 are possible
+// This is the default interval to use, which can be overwritten via DownLink. If an interval
+// is set via DownLink it will be saved in EEPROM and the time specified here will no longer be used.
 // Actual Sleep Time is SLEEP_TIME*2*32 Seconds due to the 32s sleep intervals of the ATTiny3216
 #define SLEEP_TIME 10
 
-// Specify TTN EU Bandplan and LoRa Chip for the LMIC
+// Specify TTN EU Bandplan and LoRa Chip for the LMIC as well as Disabling some unused functions
 // See LMIC documentation / project_config.h for more options
 #define CFG_eu868 1
 #define CFG_sx1276_radio 1
+#define DISABLE_PING
+#define DISABLE_BEACONS
 
 // Keys for OTAA Mode
 // APPEUI and DEVEUI from TTN, LSB!

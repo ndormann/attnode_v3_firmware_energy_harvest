@@ -18,6 +18,10 @@ Before Compiling and Flashing make sure to copy config.h.example to config.h and
 
 Programming is done using a [MicroUPDI Programmer](https://github.com/MCUdude/microUPDI) - for other pogramming variants see the MegaTinyCore documentation.
 
+## Configuring via Downlink
+
+It is possible to change the sending interval via Downlink-Packets at runtime. The time between Transmits is specified in minutes (or more exactly, 64 Second intervals) and has to be sent as a 2 byte value, which will be interpreted as an uint. so for example 0x0001 means 1 Minute, 0x0002 means 2 Minutes and so on. Sending 0xFFFF resets the value to the compiled in default.
+
 ## Acknowledgements
 
 Parts of this code where kindly provided by [@shempe](https://twitter.com/shempe)
