@@ -16,6 +16,23 @@
 #include "config.h"
 #include "debug.h"
 
+// define the blink function and  BLINK_LED Macro depending
+// on the definition of LED_PIN
+#ifdef LED_PIN
+void blink(uint8_t num) {
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, 0);
+  for (uint8_t i = 0; i < num * 2; i++) {
+    digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+    delay(100);
+  }
+  digitalWrite(LED_PIN, 0);
+}
+#define BLINK_LED(COUNT) blink(COUNT);
+#else
+#define BLINK_LED(COUNT)
+#endif
+
 #ifdef HAS_BME280
 #include "BME280.h"
 BME280 sensor;
@@ -82,6 +99,7 @@ void onEvent(ev_t ev) {
     case EV_JOINED:
       // Disable LinkCheck
       LMIC_setLinkCheckMode(0);
+      BLINK_LED(2);
       DEBUG_PRINTLN("OTAA Join Succeeded");
       break;
     case EV_TXCOMPLETE:
@@ -122,19 +140,6 @@ uint16_t readSupplyVoltage() { //returns value in millivolts to avoid floating p
   reading = intermediate / temp;
   return reading;
 }
-
-// Blink x times
-#ifdef LED_PIN
-void blink(uint8_t num) {
-  pinMode(LED_PIN, OUTPUT);
-  digitalWrite(LED_PIN, 0);
-  for (uint8_t i = 0; i < num * 2; i++) {
-    digitalWrite(LED_PIN, !digitalRead(LED_PIN));
-    delay(5);
-  }
-  digitalWrite(LED_PIN, 0);
-}
-#endif
 
 // Read Sensors and Send Data
 // All Sensor Code and Data Preparation goes here
@@ -225,13 +230,9 @@ void setup()
   }
     
   DEBUG_PRINTLN("Setup Finished");
+  
   // Schedule First Send (Triggers OTAA Join as well)
   do_send(&sendjob);
-
-#ifdef LED_PIN
-  pinMode(LED_PIN, OUTPUT);
-  blink(1);
-#endif
 }
 
 void loop()
