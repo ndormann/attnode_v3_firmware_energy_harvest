@@ -4,6 +4,10 @@
 
 THIS IS STILL WORK IN PROGRESS!
 
+## Documentation
+
+**The full documentation for firmware options, payload decoders and programming can be found at [attno.de](https://www.attno.de/21-firmware-v3)**
+
 ## Configuration and Programming
 
 This is the Work in Progress Repository for ATTNode v3 compatible firmware. At the moment it supports LoRa communication using OTAA and a BME280 or SHT21 sensor, as well as deep sleep between measurements.
