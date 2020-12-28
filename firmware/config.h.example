@@ -15,7 +15,7 @@
 // This is the default interval to use, which can be overwritten via DownLink. If an interval
 // is set via DownLink it will be saved in EEPROM and the time specified here will no longer be used.
 // Actual Sleep Time is SLEEP_TIME*2*32 Seconds due to the 32s sleep intervals of the ATTiny3216
-#define SLEEP_TIME 10
+uint16_t sleep_time = 10;
 
 // Specify TTN EU Bandplan and LoRa Chip for the LMIC as well as Disabling some unused functions
 // See LMIC documentation / project_config.h for more options
