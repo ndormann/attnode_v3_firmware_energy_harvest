@@ -78,7 +78,7 @@ int32_t BME280::compensate_h(int32_t adc_H)
   return (uint32_t)((v_x1_u32r>>12)/10);
 }
 
-void BME280::getData(int32_t *t, int32_t *p, int32_t *h) {
+void BME280::getSensorData(lora_data &loradata) {
 
 	int32_t UP, UT, UH;
   int32_t rawP, rawT;
@@ -106,9 +106,9 @@ void BME280::getData(int32_t *t, int32_t *p, int32_t *h) {
   UH = read16(0xFD);
 
 	// Compensate Values and Return
-	*t = compensate_t(UT);
-  *p = compensate_p(UP);
-  *h = compensate_h(UH);
+	loradata.temperature = compensate_t(UT);
+  loradata.pressure    = compensate_p(UP);
+  loradata.humidity    = compensate_h(UH);
 }
 
 uint8_t BME280::read8(uint8_t addr) {

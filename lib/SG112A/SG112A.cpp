@@ -5,7 +5,11 @@ void GA112A(void) {
   
 }
 
-uint16_t getPPM(void) {
+void SG112A::getSensorData(lora_data &loradata) {
+
+}
+
+uint16_t SG112A::getPPM(void) {
   
 }
 

@@ -31,14 +31,15 @@ void blink(uint8_t num) {
 #define BLINK_LED(COUNT)
 #endif
 
-#ifdef HAS_BME280
-#include <BME280.h>
-BME280 sensor;
-#endif
-
-#ifdef HAS_SHT21
-#include <SHT21.h>
-SHT21 sensor;
+#if defined HAS_BME280
+  #include <BME280.h>
+  BME280 sensor;
+#elif defined HAS_SHT21
+  #include <SHT21.h>
+  SHT21 sensor;
+#elif defined HAS_SG112A
+  #include <SG112A.h>
+  SG112A sensor;
 #endif
 
 // Define some LMIC Callbacks and Variables
@@ -147,21 +148,9 @@ void do_send(osjob_t* j) {
   #ifdef HAS_NO_SENSOR
   struct lora_data {
     uint8_t bat;
-  } __attribute ((packed)) data;
-  #elif defined HAS_SHT21
-  struct lora_data {
-    uint8_t bat;
-    int32_t temperature;
-    int32_t humidity;
-  } __attribute__ ((packed)) data;
-  #elif defined HAS_BME280
-  struct lora_data {
-    uint8_t bat;
-    int32_t temperature;
-    int32_t humidity;
-    int32_t pressure;
-  } __attribute__ ((packed)) data;
+  } __attribute ((packed));
   #endif
+  lora_data data; // The struct is defined in the sensor class (or above for use without a sensor)
   
   if (LMIC.opmode & OP_TXRXPEND) {
     delay(1);
@@ -172,12 +161,9 @@ void do_send(osjob_t* j) {
     if (batv % 20 > 9)
       data.bat += 1;
 
-    // Take Measurements depending on Sensor
-    #ifdef HAS_SHT21
-    data.temperature = (int32_t)(sensor.getTemperature()*100);
-    data.humidity    = (int32_t)(sensor.getHumidity()*100);
-    #elif defined HAS_BME280
-    sensor.getData(&data.temperature, &data.pressure, &data.humidity);
+    // Get Sensor Readings Into Data Paket
+    #ifndef HAS_NO_SENSOR
+    sensor.getSensorData(data);
     #endif
 
     // Queue Packet for Sending

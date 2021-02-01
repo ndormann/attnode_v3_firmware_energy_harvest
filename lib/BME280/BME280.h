@@ -5,6 +5,13 @@
 
 #define BME280_I2CADDR 0x76
 
+struct lora_data {
+  uint8_t bat;
+  int32_t temperature;
+  int32_t humidity;
+  int32_t pressure;
+} __attribute__ ((packed));
+
 class BME280
 {
 private:
@@ -36,7 +43,6 @@ public:
   // Get Calibration Data from Sensor
   void getCalData(void);
   // Read Pressure From Sensor
-  void getData(int32_t *t, int32_t *p, int32_t *h);
-
+  void getSensorData(lora_data &loradata);
 };
 #endif

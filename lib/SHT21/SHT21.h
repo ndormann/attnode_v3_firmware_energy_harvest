@@ -37,6 +37,12 @@
 #define SHT21_HUMINOHOLD 0xF5
 #define SHT21_SOFTRESET  0xFE
 
+struct lora_data {
+  uint8_t bat;
+  int32_t temperature;
+  int32_t humidity;
+} __attribute__ ((packed));
+
 class SHT21
 {
     private:
@@ -44,9 +50,7 @@ class SHT21
 
     public:
         SHT21(void);
-
-        float getTemperature(void);
-        float getHumidity(void);
+        void getSensorData(lora_data &loradata);
 };
 
 #endif

@@ -52,10 +52,7 @@ uint16_t SHT21::sensorRead(uint8_t command) {
     return result;
 }
 
-float SHT21::getTemperature(void) {
-  return (-46.85 + 175.72 / 65536.0 * (float)(sensorRead(SHT21_TEMPHOLD)));
-}
-
-float SHT21::getHumidity(void) {
-    return (-6.0 + 125.0 / 65536.0 * (float)(sensorRead(SHT21_HUMIHOLD)));
+void SHT21::getSensorData(lora_data &loradata) {
+    loradata.temperature = (int32_t)((-46.85 + 175.72 / 65536.0 * (float)(sensorRead(SHT21_TEMPHOLD)))*100);
+    loradata.humidity    = (int32_t)((-6.0 + 125.0 / 65536.0 * (float)(sensorRead(SHT21_HUMIHOLD)))*100);
 }
