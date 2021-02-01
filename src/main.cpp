@@ -1,4 +1,3 @@
-
 #include <Arduino.h>
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
@@ -6,13 +5,12 @@
 #include <Wire.h>
 #include <EEPROM.h>
 
+#include <lmic.h>
+#include <hal/hal.h>
+
 // Keep Track of used EEPROM Addresses
 #define ADDR_SLP 0 // Sleep Interval, 2 Bytes
 
-// Use the local config.h for LMIC Configuration
-#define ARDUINO_LMIC_PROJECT_CONFIG_H config.h
-#include <lmic.h>
-#include <hal/hal.h>
 #include "config.h"
 #include "debug.h"
 
@@ -34,12 +32,12 @@ void blink(uint8_t num) {
 #endif
 
 #ifdef HAS_BME280
-#include "BME280.h"
+#include <BME280.h>
 BME280 sensor;
 #endif
 
 #ifdef HAS_SHT21
-#include "SHT21.h"
+#include <SHT21.h>
 SHT21 sensor;
 #endif
 
@@ -54,6 +52,7 @@ void os_getDevKey (u1_t* buf) {
   memcpy_P(buf, APPKEY, 16);
 }
 static osjob_t sendjob;
+void do_send(osjob_t* j);
 
 // Pin-Mapping for ATTNode v3
 const lmic_pinmap lmic_pins = {
@@ -214,7 +213,7 @@ void setup()
   DEBUG_PRINT("Initializing LMIC...")
   os_init();
   LMIC_reset();                                  // Reset LMIC state and cancel all queued transmissions
-  LMIC_setClockError(MAX_CLOCK_ERROR * 1 / 100); // Compensate for Clock Skew
+  LMIC_setClockError(MAX_CLOCK_ERROR * 10 / 100); // Compensate for Clock Skew
   LMIC.dn2Dr = DR_SF9;                           // Downlink Band
   LMIC_setDrTxpow(DR_SF7, 14);                   // Default to SF7
   DEBUG_PRINTLN("Done");

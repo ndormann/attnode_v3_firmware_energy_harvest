@@ -1,8 +1,4 @@
-# ATTNode v3 Firmware (WiP)
-
-## Disclaimer
-
-THIS IS STILL WORK IN PROGRESS!
+# ATTNode v3 Firmware
 
 ## Documentation
 
@@ -10,17 +6,15 @@ THIS IS STILL WORK IN PROGRESS!
 
 ## Configuration and Programming
 
-This is the Work in Progress Repository for ATTNode v3 compatible firmware. At the moment it supports LoRa communication using OTAA and a BME280 or SHT21 sensor, as well as deep sleep between measurements.
+This is the Repository for ATTNode v3 compatible firmware. At the moment it supports LoRa communication using OTAA and a BME280 or SHT21 sensor, as well as deep sleep between measurements.
 
-As there is no PlatformIO Support for the ATTiny3216 yet, it is (for now) developed using Arduino IDE and the [MegaTinyCore](https://github.com/SpenceKonde/megaTinyCore). You also need to set the correct Settings for programming the ATTiny3216 in ArduionIDE. Here is a screenshot of the settings I use:
+The Firmware is developed using [PlatformIO](https://platformio.org/). At least Version 5.1.0 is needed for ATTiny3216 Support.
 
-![ArduinoIDE Settings](ide_settings.png)
+To Set the Fuses for Clock Speed, BOD Levels etc., use the "Set Fuses" Operation in PlatformIO. This has to be done once for a "fresh" Node or when the Board Config in PlatformIO was changed. Afterwards it is enough to use the normal "Upload" function for Code or config.h changes.
 
-You also need to install the MCCI Arduino LMIC Library form the IDEs Library Manager or from https://github.com/mcci-catena/arduino-lmic
+Before Programming Node, copy src/config.h.example to src/config.h and set the used sensor, LoRaWAN keys and other options as needed.
 
-Before Compiling and Flashing make sure to copy config.h.example to config.h and set your LoRa OTAA Keys there. You can also set the Sending Interval and used Sensors there.
-
-Programming is done using a [MicroUPDI Programmer](https://github.com/MCUdude/microUPDI) - for other pogramming variants see the MegaTinyCore documentation.
+Programming is done using a [MicroUPDI Programmer](https://github.com/MCUdude/microUPDI), settings in platformio.ini are set to use it. For other pogrammer options see the PlatformIO Documentation
 
 ## Configuring via Downlink
 

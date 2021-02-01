@@ -17,13 +17,6 @@
 // Actual Sleep Time is SLEEP_TIME*2*32 Seconds due to the 32s sleep intervals of the ATTiny3216
 uint16_t sleep_time = 10;
 
-// Specify TTN EU Bandplan and LoRa Chip for the LMIC as well as Disabling some unused functions
-// See LMIC documentation / project_config.h for more options
-#define CFG_eu868 1
-#define CFG_sx1276_radio 1
-#define DISABLE_PING
-#define DISABLE_BEACONS
-
 // Keys for OTAA Mode
 // APPEUI and DEVEUI from TTN, LSB!
 static const u1_t PROGMEM APPEUI[8]={ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
