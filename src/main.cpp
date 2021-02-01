@@ -31,7 +31,11 @@ void blink(uint8_t num) {
 #define BLINK_LED(COUNT)
 #endif
 
-#if defined HAS_BME280
+#if defined HAS_NO_SENSOR
+  struct lora_data {
+    uint8_t bat;
+  } __attribute ((packed));
+#elif defined HAS_BME280
   #include <BME280.h>
   BME280 sensor;
 #elif defined HAS_SHT21
@@ -142,15 +146,10 @@ uint16_t readSupplyVoltage() { //returns value in millivolts to avoid floating p
 }
 
 // Read Sensors and Send Data
-// All Sensor Code and Data Preparation goes here
 void do_send(osjob_t* j) {
   // Prepare LoRa Data Packet
-  #ifdef HAS_NO_SENSOR
-  struct lora_data {
-    uint8_t bat;
-  } __attribute ((packed));
-  #endif
-  lora_data data; // The struct is defined in the sensor class (or above for use without a sensor)
+  // The struct is defined in the sensor class (or above for use without a sensor)
+  lora_data data; 
   
   if (LMIC.opmode & OP_TXRXPEND) {
     delay(1);
