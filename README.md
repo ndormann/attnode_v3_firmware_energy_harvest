@@ -6,13 +6,13 @@
 
 ## Configuration and Programming
 
-This is the Repository for ATTNode v3 compatible firmware. At the moment it supports LoRa communication using OTAA and a BME280 or SHT21 sensor, as well as deep sleep between measurements.
+This is the code repository for ATTNode v3 compatible firmware. At the moment it supports LoRa communication using OTAA and a BME280 or SHT21 sensor, as well as deep sleep between measurements.
 
-The Firmware is developed using [PlatformIO](https://platformio.org/). At least Version 5.1.0 is needed for ATTiny3216 Support.
+The firmware is developed using [PlatformIO](https://platformio.org/). At least version 5.1.0 is needed for ATTiny3216 support.
 
-To Set the Fuses for Clock Speed, BOD Levels etc., use the "Set Fuses" Operation in PlatformIO. This has to be done once for a "fresh" Node or when the Board Config in PlatformIO was changed. Afterwards it is enough to use the normal "Upload" function for Code or config.h changes.
+To set the fuses for clock speed, BOD levels etc., use the "Set Fuses" operation in PlatformIO. This has to be done once for a "fresh" Node or when the Board Config in platformio.ini was changed. Afterwards it is enough to use the normal "Upload" function for Code or config.h changes.
 
-Before Programming Node, copy src/config.h.example to src/config.h and set the used sensor, LoRaWAN keys and other options as needed.
+Before programming a node, copy src/config.h.example to src/config.h and set the used sensor, LoRaWAN keys and other options as needed.
 
 Programming is done using a [MicroUPDI Programmer](https://github.com/MCUdude/microUPDI), settings in platformio.ini are set to use it. For other pogrammer options see the PlatformIO Documentation
 
