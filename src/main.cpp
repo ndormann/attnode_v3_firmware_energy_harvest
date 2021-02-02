@@ -35,6 +35,9 @@ void blink(uint8_t num) {
   struct lora_data {
     uint8_t bat;
   } __attribute ((packed));
+#elif defined HAS_SG112A
+  #include <SG112A.h>
+  SG112A sensor;
 #elif defined HAS_BME280
   #include <BME280.h>
   BME280 sensor;
@@ -68,7 +71,7 @@ const lmic_pinmap lmic_pins = {
 };
 
 // List of unused Pins - will be disabled for Power Saving
-#ifdef DEBUG
+#if defined DEBUG || defined HAS_SG112A
 const int disabledPins[] = {PIN_PB5, PIN_PB4, PIN_PB1, PIN_PB0, PIN_PC3, PIN_PC2, PIN_PC1, PIN_PC0};
 #else
 const int disabledPins[] = {PIN_PB5, PIN_PB4, PIN_PB3, PIN_PB2, PIN_PB1, PIN_PB0, PIN_PC3, PIN_PC2, PIN_PC1, PIN_PC0};

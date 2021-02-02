@@ -3,11 +3,14 @@
 #define LED_PIN PIN_PA7
 
 // Enable Serial Debugging. Parameters for the Serial Port are 115200
+// Please be aware that the SG112A/B CO2 Sensor uses the HW-UART, so
+// Serial Debug Output is not available with this Sensor.
 // #define DEBUG
 
 // Define which Sensor is installed
 #define HAS_BME280
 // #define HAS_SHT21
+// #define HAS_SG112A
 // #define HAS_NO_SENSOR
 
 // How many minutes to sleep between Measuring/Sending
