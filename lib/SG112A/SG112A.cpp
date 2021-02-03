@@ -4,18 +4,15 @@
 SG112A::SG112A(void) {
     Serial.begin(9600);
     Serial.setTimeout(READ_TIMEOUT);
-    delay(5000);
-    write(CMD_GET_PPM);
-    read();
 }
 
 void SG112A::getSensorData(lora_data &loradata) {
     write(CMD_GET_PPM);
     delay(50);
-    uint8_t byteLen = read();
-
-    if (byteLen > 0) {
-        switch(buffer[3]) {
+    uint8_t readBytes = read();
+    
+    if (readBytes > 0) {
+        switch(buffer[2]) {
             case 0x15:
                 loradata.ppm = (buffer[5]*256) + buffer[4];
                 break;
