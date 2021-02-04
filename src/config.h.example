@@ -11,6 +11,7 @@
 #define HAS_BME280
 // #define HAS_SHT21
 // #define HAS_SG112A
+// #define HAS_MHZ19C
 // #define HAS_NO_SENSOR
 
 // How many minutes to sleep between Measuring/Sending
