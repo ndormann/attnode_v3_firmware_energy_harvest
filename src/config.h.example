@@ -1,3 +1,5 @@
+#ifndef CONFIG_H
+#define CONFIG_H
 
 // ATTNode v3 Onboard LED is on PIN_PA7
 #define LED_PIN PIN_PA7
@@ -8,11 +10,12 @@
 // #define DEBUG
 
 // Define which Sensor is installed
-#define HAS_BME280
+#define HAS_NO_SENSOR
+// #define HAS_BME280
 // #define HAS_SHT21
 // #define HAS_SG112A
 // #define HAS_MHZ19C
-// #define HAS_NO_SENSOR
+
 
 // How many minutes to sleep between Measuring/Sending
 // Since this is a 2-byte value internally, intervals between 1 and 65536 are possible
@@ -27,3 +30,6 @@ static const u1_t PROGMEM APPEUI[8]={ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
 static const u1_t PROGMEM DEVEUI[8]={ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 // APPKey from TTN, MSB!
 static const u1_t PROGMEM APPKEY[16] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+// ALL EDITS ABOVE THIS LINE!
+#endif
