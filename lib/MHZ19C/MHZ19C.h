@@ -51,6 +51,7 @@ class MHZ19C {
 
   public:
     MHZ19C(void);
+    void MHZ19C::initialize(void);
     void getSensorData(lora_data &loradata);
     void setSelfCalibration(bool state);
 };

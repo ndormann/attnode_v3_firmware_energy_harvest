@@ -199,6 +199,9 @@ void setup()
   #ifdef HAS_BME280
   sensor.getCalData();
   #endif
+  #ifdef HAS_MHZ19C
+  sensor.initialize();
+  #endif
 
   // Setup LMIC
   DEBUG_PRINT("Initializing LMIC...")

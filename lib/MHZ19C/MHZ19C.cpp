@@ -33,6 +33,14 @@ MHZ19C::MHZ19C(void) {
     Serial.setTimeout(MHZ19C_READ_TIMEOUT);
 }
 
+void MHZ19C::initialize(void) {
+  #ifdef MHZ19C_ENABLE_AUTOCAL
+  setSelfCalibration(1);
+  #else
+  setSelfCalibration(0);
+  #endif
+}
+
 void MHZ19C::getSensorData(lora_data &loradata) {
     write(MHZ19C_CMD_GET_PPM, 0x00);
     delay(50);
