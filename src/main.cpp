@@ -192,10 +192,14 @@ void do_send(osjob_t* j) {
     #ifndef HAS_NO_SENSOR
     sensor.getSensorData(data);
     
-    // ppm_level
-    // 0 -> < 1000 ppm green
-    // 1 -> < 1800 ppm yellow
-    // 2 -> > 1000 ppm red
+    // Queue Packet for Sending
+    DEBUG_PRINTLN("LoRa-Packet Queued");
+    LMIC_setTxData2(1, (unsigned char *)&data, sizeof(data), 0);
+
+    // ppm level
+    // < 1000 ppm green
+    // < 1800 ppm yellow
+    // > 1000 ppm red
 
     if (data.ppm > 0 && data.ppm <= 1000) {
       leds.setPixelColor(0, leds.Color(0,127,0));
@@ -212,9 +216,7 @@ void do_send(osjob_t* j) {
     }
     #endif
 
-    // Queue Packet for Sending
-    DEBUG_PRINTLN("LoRa-Packet Queued");
-    LMIC_setTxData2(1, (unsigned char *)&data, sizeof(data), 0);
+
   }
 }
 
@@ -228,7 +230,7 @@ void setup()
   SPI.begin();
 
   pinMode(PIN_PC1, OUTPUT);
-  leds.setBrightness(127);
+  leds.setBrightness(64);
 
   // Disable unused Pins (for power saving)
   for (int i = 0; i < (sizeof(disabledPins) / sizeof(disabledPins[0])) - 1; i++)
