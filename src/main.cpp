@@ -31,6 +31,14 @@ void blink(uint8_t num) {
 #define BLINK_LED(COUNT)
 #endif
 
+// WS2812B
+#include <tinyNeoPixel_Static.h>
+
+#define WS_NUM_PIXELS 2
+
+byte pixels[WS_NUM_PIXELS * 3];
+tinyNeoPixel leds = tinyNeoPixel(WS_NUM_PIXELS, PIN_PC1, NEO_GRB, pixels);
+
 #if defined HAS_NO_SENSOR
   struct lora_data {
     uint8_t bat;
@@ -75,7 +83,7 @@ const lmic_pinmap lmic_pins = {
 
 // List of unused Pins - will be disabled for Power Saving
 #if defined DEBUG || defined HAS_SG112A || defined HAS_MHZ19C
-const int disabledPins[] = {PIN_PB5, PIN_PB4, PIN_PB1, PIN_PB0, PIN_PC3, PIN_PC2, PIN_PC1, PIN_PC0};
+const int disabledPins[] = {PIN_PB5, PIN_PB4, PIN_PB1, PIN_PB0, PIN_PC3, PIN_PC2, PIN_PC0};
 #else
 const int disabledPins[] = {PIN_PB5, PIN_PB4, PIN_PB3, PIN_PB2, PIN_PB1, PIN_PB0, PIN_PC3, PIN_PC2, PIN_PC1, PIN_PC0};
 #endif
@@ -109,12 +117,21 @@ void onEvent(ev_t ev) {
     case EV_JOINED:
       // Disable LinkCheck
       LMIC_setLinkCheckMode(0);
-      BLINK_LED(2);
+      leds.setPixelColor(1, leds.Color(0,127,0));
+      leds.show();
+      delay(1000);
+      leds.setPixelColor(1, leds.Color(0,0,0));
+      leds.show();
       DEBUG_PRINTLN("OTAA Join Succeeded");
       break;
     case EV_TXCOMPLETE:
       // Check for Downlink
       DEBUG_PRINTLN("LoRa Packet Sent");
+      leds.setPixelColor(1, leds.Color(0,127,0));
+      leds.show();
+      delay(100);
+      leds.setPixelColor(1, leds.Color(0,0,0));
+      leds.show();
       if ((int)LMIC.dataLen == 2) {
         // We got a Packet with the right size - lets assemble it into a uint16_t
         DEBUG_PRINTLN("Received Downlink")
@@ -123,6 +140,11 @@ void onEvent(ev_t ev) {
         DEBUG_PRINTLN(tmpslp);
         sleep_time = tmpslp;
         EEPROM.put(ADDR_SLP, tmpslp);
+        leds.setPixelColor(1, leds.Color(0,0,127));
+        leds.show();
+        delay(250);
+        leds.setPixelColor(1, leds.Color(0,0,0));
+        leds.show();
       }
 
       // Got to sleep for specified Time
@@ -169,6 +191,25 @@ void do_send(osjob_t* j) {
     // Get Sensor Readings Into Data Paket
     #ifndef HAS_NO_SENSOR
     sensor.getSensorData(data);
+    
+    // ppm_level
+    // 0 -> < 1000 ppm green
+    // 1 -> < 1800 ppm yellow
+    // 2 -> > 1000 ppm red
+
+    if (data.ppm > 0 && data.ppm <= 1000) {
+      leds.setPixelColor(0, leds.Color(0,127,0));
+      leds.show();
+    } else if (data.ppm > 1000 && data.ppm <= 1800) {
+      leds.setPixelColor(0, leds.Color(127,127,0));
+      leds.show();
+    } else if (data.ppm > 1800) {
+      leds.setPixelColor(0, leds.Color(127,0,0));
+      leds.show();
+    } else {
+      leds.setPixelColor(0, leds.Color(0,0,0));
+      leds.show();
+    }
     #endif
 
     // Queue Packet for Sending
@@ -185,6 +226,9 @@ void setup()
   // Initialize SPI and I2C
   Wire.begin();
   SPI.begin();
+
+  pinMode(PIN_PC1, OUTPUT);
+  leds.setBrightness(127);
 
   // Disable unused Pins (for power saving)
   for (int i = 0; i < (sizeof(disabledPins) / sizeof(disabledPins[0])) - 1; i++)
@@ -225,6 +269,8 @@ void setup()
   DEBUG_PRINTLN("Setup Finished");
   
   // Schedule First Send (Triggers OTAA Join as well)
+  leds.setPixelColor(1, leds.Color(127, 127, 0));
+  leds.show();
   do_send(&sendjob);
 }
 
