@@ -31,14 +31,20 @@ void blink(uint8_t num) {
 #define BLINK_LED(COUNT)
 #endif
 
-// WS2812B
-#include <tinyNeoPixel_Static.h>
+// WS2812B RGB LEDs on the CO2 Addon Board
+// Defines the  Macro Function WS2812B_SETLED so we don't need #ifdefs everywhere
+#ifdef WS2812B_PIN
+  #include <tinyNeoPixel_Static.h>
+  byte pixels[WS2812B_NUM * 3];
+  tinyNeoPixel leds = tinyNeoPixel(WS2812B_NUM, WS2812B_PIN, NEO_GRB, pixels);
+  #define WS2812B_SETLED(led,r,g,b) leds.setPixelColor(led,r,g,b); leds.show()
+  #define WS2812B_BLINK(led,r,g,b,ms) leds.setPixelColor(led,r,g,b); leds.show(); delay(ms); leds.setPixelColor(led,0,0,0); leds.show()
+#else
+  #define WS2812B_SETLED(led,r,g,b)
+  #define WS2812B_BLINK(led,r,g,b,ms)
+#endif
 
-#define WS_NUM_PIXELS 2
-
-byte pixels[WS_NUM_PIXELS * 3];
-tinyNeoPixel leds = tinyNeoPixel(WS_NUM_PIXELS, PIN_PC1, NEO_GRB, pixels);
-
+// Create the Sensor Objects
 #if defined HAS_NO_SENSOR
   struct lora_data {
     uint8_t bat;
@@ -83,7 +89,7 @@ const lmic_pinmap lmic_pins = {
 
 // List of unused Pins - will be disabled for Power Saving
 #if defined DEBUG || defined HAS_SG112A || defined HAS_MHZ19C
-const int disabledPins[] = {PIN_PB5, PIN_PB4, PIN_PB1, PIN_PB0, PIN_PC3, PIN_PC2, PIN_PC0};
+const int disabledPins[] = {PIN_PB5, PIN_PB4, PIN_PB1, PIN_PB0, PIN_PC3, PIN_PC2, PIN_PC1, PIN_PC0};
 #else
 const int disabledPins[] = {PIN_PB5, PIN_PB4, PIN_PB3, PIN_PB2, PIN_PB1, PIN_PB0, PIN_PC3, PIN_PC2, PIN_PC1, PIN_PC0};
 #endif
@@ -117,21 +123,13 @@ void onEvent(ev_t ev) {
     case EV_JOINED:
       // Disable LinkCheck
       LMIC_setLinkCheckMode(0);
-      leds.setPixelColor(1, leds.Color(0,127,0));
-      leds.show();
-      delay(1000);
-      leds.setPixelColor(1, leds.Color(0,0,0));
-      leds.show();
+      WS2812B_BLINK(1,0,127,0,1000);
       DEBUG_PRINTLN("OTAA Join Succeeded");
       break;
     case EV_TXCOMPLETE:
       // Check for Downlink
       DEBUG_PRINTLN("LoRa Packet Sent");
-      leds.setPixelColor(1, leds.Color(0,127,0));
-      leds.show();
-      delay(100);
-      leds.setPixelColor(1, leds.Color(0,0,0));
-      leds.show();
+      WS2812B_BLINK(1,0,127,0,1000);
       if ((int)LMIC.dataLen == 2) {
         // We got a Packet with the right size - lets assemble it into a uint16_t
         DEBUG_PRINTLN("Received Downlink")
@@ -140,11 +138,7 @@ void onEvent(ev_t ev) {
         DEBUG_PRINTLN(tmpslp);
         sleep_time = tmpslp;
         EEPROM.put(ADDR_SLP, tmpslp);
-        leds.setPixelColor(1, leds.Color(0,0,127));
-        leds.show();
-        delay(250);
-        leds.setPixelColor(1, leds.Color(0,0,0));
-        leds.show();
+        WS2812B_BLINK(1,0,0,127,250);
       }
 
       // Got to sleep for specified Time
@@ -196,25 +190,24 @@ void do_send(osjob_t* j) {
     DEBUG_PRINTLN("LoRa-Packet Queued");
     LMIC_setTxData2(1, (unsigned char *)&data, sizeof(data), 0);
 
-    // ppm level
+    #if defined WS2812B_PIN && (defined HAS_SG112A || defined HAS_MHZ19C)
+
+    // CO2 PPM Levels and LED Colors
     // < 1000 ppm green
     // < 1800 ppm yellow
     // > 1000 ppm red
 
     if (data.ppm > 0 && data.ppm <= 1000) {
-      leds.setPixelColor(0, leds.Color(0,127,0));
-      leds.show();
+      WS2812B_SETLED(0,0,127,0);
     } else if (data.ppm > 1000 && data.ppm <= 1800) {
-      leds.setPixelColor(0, leds.Color(127,127,0));
-      leds.show();
+      WS2812B_SETLED(0,127,127,0);
     } else if (data.ppm > 1800) {
-      leds.setPixelColor(0, leds.Color(127,0,0));
-      leds.show();
+      WS2812B_SETLED(0,127,0,0);
     } else {
-      leds.setPixelColor(0, leds.Color(0,0,0));
-      leds.show();
+      WS2812B_SETLED(0,0,0,0);
     }
-    #endif
+    #endif // WS2812B
+    #endif // #infdef HAS_NO_SENSOR
 
 
   }
@@ -229,12 +222,14 @@ void setup()
   Wire.begin();
   SPI.begin();
 
-  pinMode(PIN_PC1, OUTPUT);
-  leds.setBrightness(64);
-
-  // Disable unused Pins (for power saving)
+   // Disable unused Pins (for power saving)
   for (int i = 0; i < (sizeof(disabledPins) / sizeof(disabledPins[0])) - 1; i++)
     pinMode(disabledPins[i], INPUT_PULLUP);
+
+  #ifdef WS2812B_PIN
+    pinMode(WS2812B_PIN, OUTPUT);
+    leds.setBrightness(WS2812B_BRIGHT);
+  #endif
 
   // Set RTC
   while (RTC.STATUS > 0) {}
@@ -271,8 +266,7 @@ void setup()
   DEBUG_PRINTLN("Setup Finished");
   
   // Schedule First Send (Triggers OTAA Join as well)
-  leds.setPixelColor(1, leds.Color(127, 127, 0));
-  leds.show();
+  WS2812B_SETLED(1,127,127,0);
   do_send(&sendjob);
 }
 
