@@ -13,6 +13,11 @@
 // #define WS2812B_NUM 2
 // #define WS2812B_BRIGHT 32
 
+// Enable Sending on Button Press, as well as Calibration by Pressing Button for 4s with MH-Z19C Addon
+// The Button has to be connected to a pin that is capable of Fully Asynchronus Interrupts.
+// For The ATTNode this means Pin PC2 if you don't want to block any other Interfaces
+// #define BTN_PIN PIN_PC2
+
 // Enable Serial Debugging. Parameters for the Serial Port are 115200
 // Please be aware that the SG112A/B CO2 Sensor uses the HW-UART, so
 // Serial Debug Output is not available with this Sensor.

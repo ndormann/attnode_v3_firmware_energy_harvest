@@ -94,6 +94,18 @@ const int disabledPins[] = {PIN_PB5, PIN_PB4, PIN_PB1, PIN_PB0, PIN_PC3, PIN_PC2
 const int disabledPins[] = {PIN_PB5, PIN_PB4, PIN_PB3, PIN_PB2, PIN_PB1, PIN_PB0, PIN_PC3, PIN_PC2, PIN_PC1, PIN_PC0};
 #endif
 
+#ifdef BTN_PIN
+volatile bool btn_pressed = 0;
+volatile unsigned long btn_millis = 0;
+
+// ISR Routine for Button
+void btn_press() {
+  btn_pressed = 1;
+  btn_millis = millis();
+  delayMicroseconds(250000);
+}
+#endif
+
 // ISR Routine for Sleep
 ISR(RTC_PIT_vect)
 {
@@ -143,8 +155,18 @@ void onEvent(ev_t ev) {
 
       // Got to sleep for specified Time
       DEBUG_PRINTLN("Going to Sleep");
-      for (uint16_t i = 0; i < sleep_time*2; i++)
-        sleep_32s();
+      for (uint16_t i = 0; i < sleep_time*2; i++) {
+        #ifdef BTN_PIN
+        if (btn_pressed) {
+          i = sleep_time*2;
+          btn_pressed = 0;
+        } else {
+        #endif
+          sleep_32s();
+        #ifdef BTN_PIN
+        }
+        #endif
+      }
 
       // Schedule Next Transmit
       do_send(&sendjob);
@@ -231,6 +253,11 @@ void setup()
     leds.setBrightness(WS2812B_BRIGHT);
   #endif
 
+  #ifdef BTN_PIN
+    pinMode(BTN_PIN, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(BTN_PIN), btn_press, FALLING);
+  #endif
+
   // Set RTC
   while (RTC.STATUS > 0) {}
   RTC.CLKSEL = RTC_CLKSEL_INT1K_gc;
@@ -272,6 +299,26 @@ void setup()
 
 void loop()
 {
-  // Only Run the LMIC loop here. Actual Sending Code is in do_send()
-  os_runloop_once(); 
+  #if defined HAS_MHZ19C && defined BTN_PIN
+  if  (digitalRead(BTN_PIN) == LOW) {
+    // Press Button longer than 4 Seconds -> Start MH-Z19C Calibration Routine
+    unsigned long loop_millis = millis();
+    if ((unsigned long)(loop_millis - btn_millis) >= 4000) {
+      WS2812B_SETLED(1,153,0,153);
+      pinMode(PIN_PB4, OUTPUT);
+      digitalWrite(PIN_PB4, LOW);
+      delay(7500);
+      digitalWrite(PIN_PB4, HIGH);
+      pinMode(PIN_PB4, INPUT_PULLUP);
+      WS2812B_SETLED(1,0,0,0);
+    } else {
+      delay(500);
+    }
+  } else {
+  #endif
+    // Only Run the LMIC loop here. Actual Sending Code is in do_send()
+    os_runloop_once(); 
+  #if defined HAS_MHZ19C && defined BTN_PIN
+  }
+  #endif
 }
