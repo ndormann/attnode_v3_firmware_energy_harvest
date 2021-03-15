@@ -13,6 +13,23 @@
 
 #include "config.h"
 #include "debug.h"
+#include "attsensor.h"
+
+#ifdef HAS_MHZ19C
+  #include <MHZ19C.h>
+#endif
+#ifdef HAS_SG112A
+  #include <SG112A.h>
+#endif
+#ifdef HAS_SENSAIRS8
+  #include <SENSAIRS8.h>
+#endif
+#ifdef HAS_BME280
+  #include <BME280.h>
+#endif
+#ifdef HAS_SHT21
+  #include <SHT21.h>
+#endif
 
 // define the blink function and  BLINK_LED Macro depending
 // on the definition of LED_PIN
@@ -44,30 +61,10 @@ void blink(uint8_t num) {
   #define WS2812B_BLINK(led,r,g,b,ms)
 #endif
 
-// Create the Sensor Objects
-#if defined HAS_NO_SENSOR
-  struct lora_data {
-    uint8_t bat;
-  } __attribute ((packed));
-#elif defined HAS_MHZ19C
-  #include <MHZ19C.h>
-  MHZ19C sensor;
-#elif defined HAS_SG112A
-  #include <SG112A.h>
-  SG112A sensor;
-#elif defined HAS_SENSAIRS8
-  #include <SENSAIRS8.h>
-  SENSAIRS8 sensor;
-#elif defined HAS_BME280
-  #include <BME280.h>
-  BME280 sensor;
-#elif defined HAS_SHT21
-  #include <SHT21.h>
-  SHT21 sensor;
-#elif defined HAS_SG112A
-  #include <SG112A.h>
-  SG112A sensor;
+#ifndef HAS_NO_SENSORS
+AttSensor* sensors[NUM_SENSORS];
 #endif
+int payloadBytes = 1;
 
 // Define some LMIC Callbacks and Variables
 void os_getArtEui (u1_t* buf) {
@@ -196,24 +193,28 @@ uint16_t readSupplyVoltage() { //returns value in millivolts to avoid floating p
 void do_send(osjob_t* j) {
   // Prepare LoRa Data Packet
   // The struct is defined in the sensor class (or above for use without a sensor)
-  lora_data data; 
+  char payload[payloadBytes];
   
   if (LMIC.opmode & OP_TXRXPEND) {
     delay(1);
   } else {
+    uint8_t curByte = 0;
+
     // Add Battery Voltage (0.2V Accuracy stored in 1 byte)
     uint32_t batv = readSupplyVoltage();
-    data.bat = (uint8_t)(batv / 20);
+    payload[curByte] = (uint8_t)(batv / 20);
     if (batv % 20 > 9)
-      data.bat += 1;
+      payload[curByte] += 1;
+    curByte++;
 
     // Get Sensor Readings Into Data Paket
     #ifndef HAS_NO_SENSOR
-    sensor.getSensorData(data);
+    for (int i=0; i < NUM_SENSORS; i++)
+      curByte = sensors[i]->getSensorData(payload, curByte);
     
     // Queue Packet for Sending
     DEBUG_PRINTLN("LoRa-Packet Queued");
-    LMIC_setTxData2(1, (unsigned char *)&data, sizeof(data), 0);
+    LMIC_setTxData2(1, payload, sizeof(payload), 0);
 
     #if defined WS2812B_PIN && (defined HAS_SG112A || defined HAS_MHZ19C)
 
@@ -261,18 +262,45 @@ void setup()
     attachInterrupt(digitalPinToInterrupt(BTN_PIN), btn_press, FALLING);
   #endif
 
+  // Setup all Sensors
+  uint8_t i = 0;
+  #ifdef HAS_MHZ19C
+    sensors[i] = new MHZ19C();
+    payloadBytes += sensors[i]->numBytes();
+    i++;
+  #endif
+  #ifdef HAS_SG112A
+    sensors[i] = new SG112A();
+    payloadBytes += sensors[i]->numBytes();
+    i++;
+  #endif
+  #ifdef HAS_SENSAIRS8
+    sensors[i] = new SENSAIRS8();
+    payloadBytes += sensors[i]->numBytes();
+    i++;
+  #endif
+  #ifdef HAS_BME280
+    sensors[i] = new BME280();
+    payloadBytes += sensors[i]->numBytes();
+    i++;
+  #endif
+  #ifdef HAS_SHT21
+    sensors[i] = new SHT21();
+    payloadBytes += sensors[i]->numBytes();
+    i++;
+  #endif
+
+
+  // Initialize all Sensors
+  #ifndef HAS_NO_SENSOR
+  for (i = 0; i < NUM_SENSORS; i++)
+    sensors[i]->initialize();
+  #endif
+
   // Set RTC
   while (RTC.STATUS > 0) {}
   RTC.CLKSEL = RTC_CLKSEL_INT1K_gc;
   while (RTC.PITSTATUS > 0) {}
-
-  // Initialize Sensor(s)
-  #ifdef HAS_BME280
-  sensor.getCalData();
-  #endif
-  #ifdef HAS_MHZ19C
-  sensor.initialize();
-  #endif
 
   // Setup LMIC
   DEBUG_PRINT("Initializing LMIC...")

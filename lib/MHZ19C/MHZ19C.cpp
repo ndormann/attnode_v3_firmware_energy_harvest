@@ -41,19 +41,23 @@ void MHZ19C::initialize(void) {
   #endif
 }
 
-void MHZ19C::getSensorData(lora_data &loradata) {
+uint8_t MHZ19C::getSensorData(char * payload, uint8_t startbyte) {
     write(MHZ19C_CMD_GET_PPM, 0x00);
     delay(50);
     uint8_t readBytes = read();
     
-    loradata.ppm = 0;
+    payload[startbyte]   = 0x00;
+    payload[startbyte+1] = 0x00;
     if (readBytes > 0) {
         switch(buffer[1]) {
             case 0x86:
-                loradata.ppm = (buffer[2]*256) + buffer[3];
+                  int16_t value = (buffer[2]*256) + buffer[3];
+                  payload[startbyte]   = (value) & 0xFF;
+                  payload[startbyte+1] = (value >> 8) & 0xFF;
                 break;
         }
     }
+    return startbyte+2;
 }
 
 // Turn Self Calibration Routine On or Off

@@ -33,18 +33,24 @@ SG112A::SG112A(void) {
     Serial.setTimeout(READ_TIMEOUT);
 }
 
-void SG112A::getSensorData(lora_data &loradata) {
+
+uint8_t SG112A::getSensorData(char *payload, uint8_t startbyte) {
     write(CMD_GET_PPM);
     delay(50);
     uint8_t readBytes = read();
     
+    payload[startbyte]   = 0x00;
+    payload[startbyte+1] = 0x00;
     if (readBytes > 0) {
         switch(buffer[2]) {
             case 0x15:
-                loradata.ppm = (buffer[5]*256) + buffer[4];
+                uint16_t value = (buffer[5]*256) + buffer[4];
+                payload[startbyte]   = (value) & 0xFF;
+                payload[startbyte+1] = (value >> 8) & 0xFF;
                 break;
         }
     }
+  return startbyte+2;
 }
 
 // Write a Command to the Sensor

@@ -1,5 +1,5 @@
 /*
-  MHZ19C.h - MHZ19C Sensor Library
+  attsensor.h - Define the Base Sensor Interface Class
   Copyright (c) 2020-2021, Stefan Brand
   All rights reserved.
   Redistribution and use in source and binary forms, with or without
@@ -23,34 +23,22 @@
   OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#ifndef ATTSENSOR_H
+#define ATTSENSOR_H
 
-#ifndef MHZ19C_H
-#define MHZ19C_H
+#include <inttypes.h>
 
-#include "../../include/attsensor.h"
-
-#define MHZ19C_READ_TIMEOUT 500  // Timeout for Serial Communication
-#define MHZ19C_SER_BUF_LEN  9    // Length of the Internal Serial Message Buffer
-
-#define MHZ19C_CMD_SET_AUTOCAL 0x79  // Turn Self Calibration on/off
-#define MHZ19C_CMD_GET_PPM     0x86  // Get Current PPM Reading
-
-class MHZ19C : public AttSensor {
-  private:
-    uint8_t buffer[MHZ19C_SER_BUF_LEN];
-
-    void write(byte cmd, byte arg);
-    uint8_t read();
-    void zeroBuffer(void);
-    uint8_t crc8(uint8_t *paket);
-    uint16_t getPPM(void);
-
+class AttSensor  {
   public:
-    MHZ19C(void);
-    void initialize(void);
-    uint8_t numBytes(void) {return 2;};
-    uint8_t getSensorData(char *payload, uint8_t startbyte);
-    void setSelfCalibration(bool state);
+    // Put the Data into the Payload Array starting at <startbyte>
+    // Return the next startbyte when done
+    virtual uint8_t getSensorData(char *payload, uint8_t startbyte) = 0;
+    
+    // Called in Setup, Do any Necessary Initialization
+    virtual void initialize(void) = 0;
+
+    // Return the number of Bytes added to the Payload
+    virtual uint8_t numBytes(void) = 0;
 };
 
 #endif

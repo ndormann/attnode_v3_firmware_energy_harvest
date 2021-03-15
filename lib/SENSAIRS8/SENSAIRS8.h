@@ -27,16 +27,12 @@
 #ifndef SENSAIRS8_H
 #define SENSAIRS8_H
 
-// Data Structure for the LoRa Packet
-struct lora_data {
-  uint8_t bat;
-  int16_t ppm;
-} __attribute__ ((packed));
+#include "../../include/attsensor.h"
 
 #define READ_TIMEOUT 500  // Timeout for Serial Communication
 #define SER_BUF_LEN  7   // Length of the Internal Serial Message Buffer
 
-class SENSAIRS8 {
+class SENSAIRS8 : public AttSensor {
   private:
     uint8_t buffer[SER_BUF_LEN];
 
@@ -46,7 +42,9 @@ class SENSAIRS8 {
 
   public:
     SENSAIRS8(void);
-    void getSensorData(lora_data &loradata);
+    uint8_t getSensorData(char *payload, uint8_t startbyte);
+    void initialize(void) {};
+    uint8_t numBytes(void) {return 2;};
 };
 
 #endif

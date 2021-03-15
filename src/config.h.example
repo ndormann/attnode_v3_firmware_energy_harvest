@@ -23,12 +23,19 @@
 // Serial Debug Output is not available with this Sensor.
 // #define DEBUG
 
+
+// Number of Active Sensors (used as long as HAS_NO_SENSOR is not enabled)
+// Set to the correct number of enabled sensors below
+// Not doing so will lead to unpredictable results or not work at all
+#define NUM_SENSORS 1
+
 // Define which Sensor is installed
 #define HAS_NO_SENSOR
 // #define HAS_BME280
 // #define HAS_SHT21
 // #define HAS_SG112A
 // #define HAS_MHZ19C
+// #define HAS_SENSAIRS8
 
 
 // How many minutes to sleep between Measuring/Sending
