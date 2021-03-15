@@ -55,6 +55,9 @@ void blink(uint8_t num) {
 #elif defined HAS_SG112A
   #include <SG112A.h>
   SG112A sensor;
+#elif defined HAS_SENSAIRS8
+  #include <SENSAIRS8.h>
+  SENSAIRS8 sensor;
 #elif defined HAS_BME280
   #include <BME280.h>
   BME280 sensor;
@@ -88,7 +91,7 @@ const lmic_pinmap lmic_pins = {
 };
 
 // List of unused Pins - will be disabled for Power Saving
-#if defined DEBUG || defined HAS_SG112A || defined HAS_MHZ19C
+#if defined DEBUG || defined HAS_SG112A || defined HAS_MHZ19C || defined HAS_SENSAIRS8
 const int disabledPins[] = {PIN_PB5, PIN_PB4, PIN_PB1, PIN_PB0, PIN_PC3, PIN_PC2, PIN_PC1, PIN_PC0};
 #else
 const int disabledPins[] = {PIN_PB5, PIN_PB4, PIN_PB3, PIN_PB2, PIN_PB1, PIN_PB0, PIN_PC3, PIN_PC2, PIN_PC1, PIN_PC0};
