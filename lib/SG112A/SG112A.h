@@ -36,7 +36,7 @@
 #define CMD_GET_SER 0x12  // Get Sensor Serial
 #define CMD_GET_PPM 0x14  // Get Current PPM Reading
 
-class SG112A {
+class SG112A : public AttSensor {
   private:
     uint8_t buffer[SER_BUF_LEN];
 

@@ -212,30 +212,32 @@ void do_send(osjob_t* j) {
     for (int i=0; i < NUM_SENSORS; i++)
       curByte = sensors[i]->getSensorData(payload, curByte);
     
-    // Queue Packet for Sending
-    DEBUG_PRINTLN("LoRa-Packet Queued");
-    LMIC_setTxData2(1, payload, sizeof(payload), 0);
-
-    #if defined WS2812B_PIN && (defined HAS_SG112A || defined HAS_MHZ19C)
-
+    #if defined WS2812B_PIN && (defined HAS_SG112A || defined HAS_MHZ19C || defined HAS_SENSAIRS8)
     // CO2 PPM Levels and LED Colors
     // < 1000 ppm green
     // < 1800 ppm yellow
     // > 1000 ppm red
 
-    if (data.ppm > 0 && data.ppm <= 1000) {
+    // Get PPM from Payload:
+    uint16_t ppm = word(payload[2], payload[1]);
+
+    // Set WS2812B-LED accodring to PPM Value
+    if (ppm > 0 && ppm <= 1000) {
       WS2812B_SETLED(0,0,127,0);
-    } else if (data.ppm > 1000 && data.ppm <= 1800) {
+    } else if (ppm > 1000 && ppm <= 1800) {
       WS2812B_SETLED(0,127,127,0);
-    } else if (data.ppm > 1800) {
+    } else if (ppm > 1800) {
       WS2812B_SETLED(0,127,0,0);
     } else {
       WS2812B_SETLED(0,0,0,0);
     }
     #endif // WS2812B
-    #endif // #infdef HAS_NO_SENSOR
 
-
+    #endif // HAS_NO_SENSOR
+    
+    // Queue Packet for Sending
+    DEBUG_PRINTLN("LoRa-Packet Queued");
+    LMIC_setTxData2(1, payload, sizeof(payload), 0);
   }
 }
 
@@ -263,6 +265,7 @@ void setup()
   #endif
 
   // Setup all Sensors
+  // Order of the Sensors here is Order in the Payload
   uint8_t i = 0;
   #ifdef HAS_MHZ19C
     sensors[i] = new MHZ19C();

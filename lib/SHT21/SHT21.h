@@ -37,8 +37,7 @@
 #define SHT21_HUMINOHOLD 0xF5
 #define SHT21_SOFTRESET  0xFE
 
-class SHT21
-{
+class SHT21  : public AttSensor {
     private:
         uint16_t sensorRead(uint8_t command);
 
