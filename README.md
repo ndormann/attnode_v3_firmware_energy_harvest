@@ -16,6 +16,36 @@ Before programming a node, copy src/config.h.example to src/config.h and set the
 
 Programming is done using a [MicroUPDI Programmer](https://github.com/MCUdude/microUPDI), settings in platformio.ini are set to use it. For other pogrammer options see the PlatformIO Documentation
 
+## Multisensor Mode
+
+The Firmware can be configured for multiple sensors at once (see comments in config.h.example). In this case the default payload decoder from the website will not be able to correctly determine the used sensors. You **must** define a specific decoder in this case. In the TTN v3 Stack a decoder can be set per device. Use the following as an example, and uncomment the parts for each enabled sensor, then make sure the placeholder for the byte index (**ii**) 
+is filled in ascending order, starting with the first enabled sensor from left to right, beginning with 1
+
+    function decodeUplink(input) {
+      var decoded = {};
+      // Battery Voltage, always enabled
+      decoded.v = (input.bytes[0] * 20) / 1000.0;
+      
+      // CO2-Sensor (SG112A, MH-Z19C, Sensair S8)
+      // decoded.ppm = ((input.bytes[ii]) | (input.bytes[ii] << 8 ));
+
+      // Temperature and Humidity (BME280 / SHT21)
+      // decoded.t = ((input.bytes[ii]) | (input.bytes[ii] << 8 ) | (input.bytes[ii] << 16 ) | (input.bytes[ii] << 24)) / 100.0;
+      // decoded.h = ((input.bytes[ii]) | (input.bytes[ii] << 8 ) | (input.bytes[ii] << 16 ) | (input.bytes[ii] << 24)) / 100.0;
+
+      // Atmospheric Pressure (BME280)
+      // decoded.p = ((input.bytes[ii]) | (input.bytes[ii] << 8 ) | (input.bytes[ii] << 16 ) | (input.bytes[ii] << 24)) / 100.0;
+  
+      // Leave this part as is
+      return {
+        data: decoded,
+        warnings: [],
+        errors: []
+      };
+    }
+
+Please be also aware, that not all sensor combinations are valid. Some might use the same interface and interfere with each others readings. Also keep in mind that RAM- and Flash-Space are limited, which might lead to crashes or the code not compiling/flashing correctly if to many sensors are enabled at the same time.
+
 ## Configuring via Downlink
 
 It is possible to change the sending interval via Downlink-Packets at runtime. The time between Transmits is specified in minutes (or more exactly, 64 Second intervals) and has to be sent as a 2 byte value, which will be interpreted as an uint. so for example 0x0001 means 1 Minute, 0x0002 means 2 Minutes and so on. Sending 0xFFFF resets the value to the compiled in default.

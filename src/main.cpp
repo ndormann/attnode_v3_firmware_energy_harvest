@@ -11,10 +11,13 @@
 // Keep Track of used EEPROM Addresses
 #define ADDR_SLP 0 // Sleep Interval, 2 Bytes
 
+// Include Config and Helpers
 #include "config.h"
 #include "debug.h"
 #include "attsensor.h"
 
+// Include All Sensors Activated in config.h
+#ifndef HAS_NO_SENSOR
 #ifdef HAS_MHZ19C
   #include <MHZ19C.h>
 #endif
@@ -30,8 +33,9 @@
 #ifdef HAS_SHT21
   #include <SHT21.h>
 #endif
+#endif
 
-// define the blink function and  BLINK_LED Macro depending
+// Define the blink function and  BLINK_LED Macro depending
 // on the definition of LED_PIN
 #ifdef LED_PIN
 void blink(uint8_t num) {
@@ -61,9 +65,12 @@ void blink(uint8_t num) {
   #define WS2812B_BLINK(led,r,g,b,ms)
 #endif
 
+// Create Array for the Sensor Objects
 #ifndef HAS_NO_SENSORS
 AttSensor* sensors[NUM_SENSORS];
 #endif
+
+// Track Length of Payload (Depends on Active Sensors)
 int payloadBytes = 1;
 
 // Define some LMIC Callbacks and Variables
@@ -94,6 +101,7 @@ const int disabledPins[] = {PIN_PB5, PIN_PB4, PIN_PB1, PIN_PB0, PIN_PC3, PIN_PC2
 const int disabledPins[] = {PIN_PB5, PIN_PB4, PIN_PB3, PIN_PB2, PIN_PB1, PIN_PB0, PIN_PC3, PIN_PC2, PIN_PC1, PIN_PC0};
 #endif
 
+// Helper variables and Interrupt Routine for Button
 #ifdef BTN_PIN
 volatile bool btn_pressed = 0;
 volatile unsigned long btn_millis = 0;
@@ -106,19 +114,19 @@ void btn_press() {
 }
 #endif
 
-// ISR Routine for Sleep
+// Interrupt Routine for Sleep
 ISR(RTC_PIT_vect)
 {
   /* Clear interrupt flag by writing '1' (required) */
   RTC.PITINTFLAGS = RTC_PI_bm;
 }
 
-// Sleep Routine
+// Sleep Routine, Sleep for 32 Seconds
 void sleep_32s() {
   cli();
   while (RTC.PITSTATUS > 0) {}
     RTC.PITINTCTRL = RTC_PI_bm;
-  // 32 Sekunden
+  // 32 Seconds
   RTC.PITCTRLA = RTC_PERIOD_CYC32768_gc | RTC_PITEN_bm;
   while (RTC.PITSTATUS & RTC_CTRLBUSY_bm) {}
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
@@ -156,6 +164,7 @@ void onEvent(ev_t ev) {
       // Got to sleep for specified Time
       DEBUG_PRINTLN("Going to Sleep");
       for (uint16_t i = 0; i < sleep_time*2; i++) {
+        // Cancel sleep Cycle if Button was Pressed
         #ifdef BTN_PIN
         if (btn_pressed) {
           i = sleep_time*2;
@@ -191,13 +200,15 @@ uint16_t readSupplyVoltage() { //returns value in millivolts to avoid floating p
 
 // Read Sensors and Send Data
 void do_send(osjob_t* j) {
-  // Prepare LoRa Data Packet
-  // The struct is defined in the sensor class (or above for use without a sensor)
+  // Array of Bytes for the Payload
+  // Length is defined by the Enabled Sensors
   char payload[payloadBytes];
   
   if (LMIC.opmode & OP_TXRXPEND) {
+    // Wayt if LMIC is busy
     delay(1);
   } else {
+    // Track Current Position in Payload Array
     uint8_t curByte = 0;
 
     // Add Battery Voltage (0.2V Accuracy stored in 1 byte)
@@ -206,12 +217,13 @@ void do_send(osjob_t* j) {
     if (batv % 20 > 9)
       payload[curByte] += 1;
     curByte++;
-
-    // Get Sensor Readings Into Data Paket
+    
     #ifndef HAS_NO_SENSOR
+    // Put Sensor Readings into the Payload Array
     for (int i=0; i < NUM_SENSORS; i++)
       curByte = sensors[i]->getSensorData(payload, curByte);
     
+    // If CO2 Addon Boards with RGB-LEDS is installed, set LED according to the current CO2 Reading
     #if defined WS2812B_PIN && (defined HAS_SG112A || defined HAS_MHZ19C || defined HAS_SENSAIRS8)
     // CO2 PPM Levels and LED Colors
     // < 1000 ppm green
@@ -232,7 +244,6 @@ void do_send(osjob_t* j) {
       WS2812B_SETLED(0,0,0,0);
     }
     #endif // WS2812B
-
     #endif // HAS_NO_SENSOR
     
     // Queue Packet for Sending
@@ -243,9 +254,11 @@ void do_send(osjob_t* j) {
 
 void setup()
 {
+  // Initialize Serial if Debug is enabled
   #ifdef DEBUG
     Serial.begin(115200);
   #endif
+
   // Initialize SPI and I2C
   Wire.begin();
   SPI.begin();
@@ -254,18 +267,21 @@ void setup()
   for (int i = 0; i < (sizeof(disabledPins) / sizeof(disabledPins[0])) - 1; i++)
     pinMode(disabledPins[i], INPUT_PULLUP);
 
+  // Setup WS2812B LEDs
   #ifdef WS2812B_PIN
     pinMode(WS2812B_PIN, OUTPUT);
     leds.setBrightness(WS2812B_BRIGHT);
   #endif
 
+  // Setup Button Interrupt
   #ifdef BTN_PIN
     pinMode(BTN_PIN, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(BTN_PIN), btn_press, FALLING);
   #endif
 
-  // Setup all Sensors
+  // Setup all Sensors and Calculate the Payload Length
   // Order of the Sensors here is Order in the Payload
+  #ifndef HAS_NO_SENSOR
   uint8_t i = 0;
   #ifdef HAS_MHZ19C
     sensors[i] = new MHZ19C();
@@ -292,7 +308,7 @@ void setup()
     payloadBytes += sensors[i]->numBytes();
     i++;
   #endif
-
+  #endif // HAS_NO_SENSOR
 
   // Initialize all Sensors
   #ifndef HAS_NO_SENSOR
@@ -300,7 +316,7 @@ void setup()
     sensors[i]->initialize();
   #endif
 
-  // Set RTC
+  // Setup RTC
   while (RTC.STATUS > 0) {}
   RTC.CLKSEL = RTC_CLKSEL_INT1K_gc;
   while (RTC.PITSTATUS > 0) {}
@@ -308,10 +324,10 @@ void setup()
   // Setup LMIC
   DEBUG_PRINT("Initializing LMIC...")
   os_init();
-  LMIC_reset();                                  // Reset LMIC state and cancel all queued transmissions
+  LMIC_reset();                                   // Reset LMIC state and cancel all queued transmissions
   LMIC_setClockError(MAX_CLOCK_ERROR * 10 / 100); // Compensate for Clock Skew
-  LMIC.dn2Dr = DR_SF9;                           // Downlink Band
-  LMIC_setDrTxpow(DR_SF7, 14);                   // Default to SF7
+  LMIC.dn2Dr = DR_SF9;                            // Downlink Band
+  LMIC_setDrTxpow(DR_SF7, 14);                    // Default to SF7
   DEBUG_PRINTLN("Done");
 
   // Check if Sending Interval is set in EEPROM
@@ -326,13 +342,15 @@ void setup()
     
   DEBUG_PRINTLN("Setup Finished");
   
-  // Schedule First Send (Triggers OTAA Join as well)
+  // Set WS2812B to Yellow for "Joining" (if enabled)
   WS2812B_SETLED(1,127,127,0);
+  // Schedule First Send (Triggers OTAA Join as well)
   do_send(&sendjob);
 }
 
 void loop()
 {
+  // Handle long Button Press for Calibration with MH-Z19C Sensor
   #if defined HAS_MHZ19C && defined BTN_PIN
   if  (digitalRead(BTN_PIN) == LOW) {
     // Press Button longer than 4 Seconds -> Start MH-Z19C Calibration Routine
