@@ -27,7 +27,7 @@
 #ifndef SHT21_H
 #define SHT21_H
 
-#include <inttypes.h>
+#include "../../include/attsensor.h"
 
 #define SHT21_I2CADDR    0x40
 
@@ -37,20 +37,15 @@
 #define SHT21_HUMINOHOLD 0xF5
 #define SHT21_SOFTRESET  0xFE
 
-struct lora_data {
-  uint8_t bat;
-  int32_t temperature;
-  int32_t humidity;
-} __attribute__ ((packed));
-
-class SHT21
-{
+class SHT21  : public AttSensor {
     private:
         uint16_t sensorRead(uint8_t command);
 
     public:
         SHT21(void);
-        void getSensorData(lora_data &loradata);
+        uint8_t getSensorData(char *payload, uint8_t startbyte);
+        void initialize(void) {};
+        uint8_t numBytes(void) {return 8;};
 };
 
 #endif

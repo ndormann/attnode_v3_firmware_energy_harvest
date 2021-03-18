@@ -27,11 +27,7 @@
 #ifndef SG112A_H
 #define SG112A_H
 
-// Data Structure for the LoRa Packet
-struct lora_data {
-  uint8_t bat;
-  int16_t ppm;
-} __attribute__ ((packed));
+#include "../../include/attsensor.h"
 
 #define READ_TIMEOUT 500  // Timeout for Serial Communication
 #define SER_BUF_LEN  16   // Length of the Internal Serial Message Buffer
@@ -40,7 +36,7 @@ struct lora_data {
 #define CMD_GET_SER 0x12  // Get Sensor Serial
 #define CMD_GET_PPM 0x14  // Get Current PPM Reading
 
-class SG112A {
+class SG112A : public AttSensor {
   private:
     uint8_t buffer[SER_BUF_LEN];
 
@@ -52,7 +48,9 @@ class SG112A {
 
   public:
     SG112A(void);
-    void getSensorData(lora_data &loradata);
+    uint8_t getSensorData(char *payload, uint8_t startbyte);
+    void initialize(void) {};
+    uint8_t numBytes(void) {return 2;};
 };
 
 #endif

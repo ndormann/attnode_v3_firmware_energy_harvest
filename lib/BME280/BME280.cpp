@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <stdint.h>
 #include <Wire.h>
 #include "BME280.h"
 
@@ -78,10 +77,10 @@ int32_t BME280::compensate_h(int32_t adc_H)
   return (uint32_t)((v_x1_u32r>>12)/10);
 }
 
-void BME280::getSensorData(lora_data &loradata) {
+uint8_t BME280::getSensorData(char *payload, uint8_t startbyte) {
 
 	int32_t UP, UT, UH;
-  int32_t rawP, rawT;
+  int32_t rawP, rawT, value;
 
   // Trigger Measurement
  	// Set Sensor Config
@@ -105,10 +104,28 @@ void BME280::getSensorData(lora_data &loradata) {
 	// Read Humidity
   UH = read16(0xFD);
 
-	// Compensate Values and Return
-	loradata.temperature = compensate_t(UT);
-  loradata.pressure    = compensate_p(UP);
-  loradata.humidity    = compensate_h(UH);
+	
+  // Temperature
+	value                = compensate_t(UT);
+  payload[startbyte]   = (value) & 0XFF;
+  payload[startbyte+1] = (value >> 8) & 0XFF;
+  payload[startbyte+2] = (value >> 16) & 0XFF;
+  payload[startbyte+3] = (value >> 24) & 0XFF;
+
+  // Humidity
+  value                = compensate_h(UH);
+  payload[startbyte+4] = (value) & 0XFF;
+  payload[startbyte+5] = (value >> 8) & 0XFF;
+  payload[startbyte+6] = (value >> 16) & 0XFF;
+  payload[startbyte+7] = (value >> 24) & 0XFF;
+
+  // Pressure
+  value                 = compensate_p(UP);
+  payload[startbyte+8]  = (value) & 0XFF;
+  payload[startbyte+9]  = (value >> 8) & 0XFF;
+  payload[startbyte+10] = (value >> 16) & 0XFF;
+  payload[startbyte+11] = (value >> 24) & 0XFF;
+  return startbyte+12;
 }
 
 uint8_t BME280::read8(uint8_t addr) {

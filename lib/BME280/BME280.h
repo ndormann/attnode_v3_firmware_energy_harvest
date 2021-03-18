@@ -1,19 +1,11 @@
 #ifndef BME280_H
 #define BME280_H
 
-#include <stdint.h>
+#include "../../include/attsensor.h"
 
 #define BME280_I2CADDR 0x76
 
-struct lora_data {
-  uint8_t bat;
-  int32_t temperature;
-  int32_t humidity;
-  int32_t pressure;
-} __attribute__ ((packed));
-
-class BME280
-{
+class BME280 : public AttSensor {
 private:
   // Variables for Calibration Values
   uint8_t  dig_H1, dig_H3;
@@ -36,13 +28,12 @@ private:
   int16_t  readS16(uint8_t addr);
   int16_t  readS16_LE(uint8_t addr);
   void     write8(uint8_t addr, uint8_t data);
+  void     getCalData(void);
 
 public:
   BME280(void);
-
-  // Get Calibration Data from Sensor
-  void getCalData(void);
-  // Read Pressure From Sensor
-  void getSensorData(lora_data &loradata);
+  uint8_t getSensorData(char *payload, uint8_t startbyte);
+  void initialize(void) {getCalData();};
+  uint8_t numBytes(void) {return 12;};
 };
 #endif

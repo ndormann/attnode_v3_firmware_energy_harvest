@@ -1,48 +1,80 @@
 #ifndef CONFIG_H
 #define CONFIG_H
+// ALL EDITS BELOW THIS LINE!
 
-// ATTNode v3 Onboard LED is on PIN_PA7
+/**************************************************************************************************************************
+ * Use a Single Color LED for Status Signaling
+ * At Startup the LED will blink twice to signal a sucessfull OTAA Join
+ *************************************************************************************************************************/
 #define LED_PIN PIN_PA7
 
-// Enable WS2812B RGB LED Support for the CO2 Addon Board
-// * First LED shows CO2-Level (green: <1000, yellow: 1000-1800, red: >=1800)
-// * Second LED shows LoRa Status (yellow: Joining, green 1s: Joined, green 100ms: Sending, blue 250ms: Received Downlink) 
-// WS2812B_BRIGHT can be set to the desired brightness value for the LEDs (0=off, 255=brightest)
-// Uncomment the 3 following lines to get the default behaviour
+/**************************************************************************************************************************
+ * Enable WS2812B RGB LED Support for the CO2 Addon Board
+ * * First LED shows CO2-Level (green: <1000, yellow: 1000-1800, red: >=1800)
+ * * Second LED shows LoRa Status (yellow: Joining, green 1s: Joined, green 100ms: Sending, blue 250ms: Received Downlink) 
+ * WS2812B_BRIGHT can be set to the desired brightness value for the LEDs (0=off, 255=brightest)
+ * Uncomment the 3 following lines to get the default behaviour
+ *************************************************************************************************************************/
 // #define WS2812B_PIN PIN_PC1
 // #define WS2812B_NUM 2
 // #define WS2812B_BRIGHT 32
 
-// Enable Sending on Button Press, as well as Calibration by Pressing Button for 4s with MH-Z19C Addon
-// The Button has to be connected to a pin that is capable of Fully Asynchronus Interrupts.
-// For The ATTNode this means Pin PC2 if you don't want to block any other Interfaces
+/**************************************************************************************************************************
+ * Enable Sending on Button Press, as well as CO2 Background Level Calibration by Pressing Button for 4s with MH-Z19C Addon
+ * The Button has to be connected to a pin that is capable of Fully Asynchronus Interrupts.
+ * For The ATTNode this means Pin PC2 if you don't want to block any other Interfaces
+ *************************************************************************************************************************/
 // #define BTN_PIN PIN_PC2
 
-// Enable Serial Debugging. Parameters for the Serial Port are 115200
-// Please be aware that the SG112A/B CO2 Sensor uses the HW-UART, so
-// Serial Debug Output is not available with this Sensor.
+/**************************************************************************************************************************
+ * Enable Serial Debugging. Parameters for the Serial Port are  115200 Baud 8n1
+ * By default the Firmware will output some messages about LoRa-Status and indicate sending
+ * The Macros DEBUG_PRINT() and DEBUG_PRINTLN() can be used to produce debug output depending on this define
+ * Please be aware that this will not work when a Serial Sensor like the SG112A/MH-Z19C or Sensair S8 ist used
+ *************************************************************************************************************************/
 // #define DEBUG
 
-// Define which Sensor is installed
+
+/**************************************************************************************************************************
+ * Number of active Sensors (used as long as HAS_NO_SENSOR is not enabled)
+ * Set to the correct number of enabled sensors below
+ * Not doing so will lead to unpredictable results or not work at all
+ * The default payload decoder will NOT WORK if more than one sensor is enabled, so you MUST define a specific
+ * decoder for this case. See the README.md for details
+ *************************************************************************************************************************/
+#define NUM_SENSORS 1
+
+/**************************************************************************************************************************
+ * Define which Sensors are installed
+ * Not all sensors can be used at the same time 
+ * For example you can only have one sensor using serial UART
+ * If HAS_NO_SENSOR is selected all other activated sensor will be ignored
+ *************************************************************************************************************************/
 #define HAS_NO_SENSOR
+// #define HAS_MHZ19C
+// #define HAS_SG112A
+// #define HAS_SENSAIRS8
 // #define HAS_BME280
 // #define HAS_SHT21
-// #define HAS_SG112A
-// #define HAS_MHZ19C
 
-
-// How many minutes to sleep between Measuring/Sending
-// Since this is a 2-byte value internally, intervals between 1 and 65536 are possible
-// This is the default interval to use, which can be overwritten via DownLink. If an interval
-// is set via DownLink it will be saved in EEPROM and the time specified here will no longer be used.
-// Actual Sleep Time is SLEEP_TIME*2*32 Seconds due to the 32s sleep intervals of the ATTiny3216
+/**************************************************************************************************************************
+ * How many minutes to sleep between Measuring/Sending
+ * Since this is a 2-byte value internally, intervals between 1 and 65536 are possible
+ * This is the default interval to use, which can be overwritten via DownLink. If an interval
+ * is set via DownLink it will be saved in EEPROM and the time specified here will no longer be used.
+ * Actual sleep Time is sleep_time*2*32 seconds due to the 32s sleep intervals of the ATTiny3216
+ *************************************************************************************************************************/
 uint16_t sleep_time = 10;
 
-// Keys for OTAA Mode
-// APPEUI and DEVEUI from TTN, LSB!
-static const u1_t PROGMEM APPEUI[8]={ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-static const u1_t PROGMEM DEVEUI[8]={ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-// APPKey from TTN, MSB!
+/**************************************************************************************************************************
+ * LoRa Keys for OTAA Mode
+ * Please make sure to use the correct byte order when copying these from the TTN-Console!
+ * APPEUI and DEVEUI need to be inserted in LSB order
+ * APPKEY needs to be inserted in MSB order
+ * in some cases there is no APPEUI, for example when using Chirpstack. leave it set to all 0x00 in these cases
+ *************************************************************************************************************************/
+static const u1_t PROGMEM APPEUI[8]  = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+static const u1_t PROGMEM DEVEUI[8]  = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 static const u1_t PROGMEM APPKEY[16] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 // ALL EDITS ABOVE THIS LINE!
