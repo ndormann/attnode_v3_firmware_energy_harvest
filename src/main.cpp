@@ -33,6 +33,9 @@
 #ifdef HAS_SHT21
   #include <SHT21.h>
 #endif
+#ifdef HAS_DS18B20
+  #include <DS18B20.h>
+#endif
 #endif
 
 // Define the blink function and  BLINK_LED Macro depending
@@ -257,6 +260,8 @@ void setup()
   // Initialize Serial if Debug is enabled
   #ifdef DEBUG
     Serial.begin(115200);
+    // Wait 2 seconds for Monitor to connect
+    delay(2000);
   #endif
 
   // Initialize SPI and I2C
@@ -282,38 +287,39 @@ void setup()
   // Setup all Sensors and Calculate the Payload Length
   // Order of the Sensors here is Order in the Payload
   #ifndef HAS_NO_SENSOR
+
   uint8_t i = 0;
   #ifdef HAS_MHZ19C
     sensors[i] = new MHZ19C();
-    payloadBytes += sensors[i]->numBytes();
     i++;
   #endif
   #ifdef HAS_SG112A
     sensors[i] = new SG112A();
-    payloadBytes += sensors[i]->numBytes();
     i++;
   #endif
   #ifdef HAS_SENSAIRS8
     sensors[i] = new SENSAIRS8();
-    payloadBytes += sensors[i]->numBytes();
     i++;
   #endif
-  #ifdef HAS_BME280
+   #ifdef HAS_BME280
     sensors[i] = new BME280();
-    payloadBytes += sensors[i]->numBytes();
     i++;
   #endif
   #ifdef HAS_SHT21
-    sensors[i] = new SHT21();
-    payloadBytes += sensors[i]->numBytes();
+    sensors[i] = new SHT21()
     i++;
   #endif
-  #endif // HAS_NO_SENSOR
-
+  #ifdef HAS_DS18B20
+    sensors[i] = new DS18B20(DS18B20_PIN, DS18B20_RES);
+    i++;
+  #endif
+  
   // Initialize all Sensors
-  #ifndef HAS_NO_SENSOR
-  for (i = 0; i < NUM_SENSORS; i++)
+  for (i = 0; i < NUM_SENSORS; i++) {
     sensors[i]->initialize();
+    payloadBytes += sensors[i]->numBytes();
+  }
+  
   #endif
 
   // Setup RTC
