@@ -33,19 +33,19 @@ DS18B20::DS18B20(uint8_t owpin, uint8_t resbits = 12, bool para = false) {
   switch(resbits) {
     case 9 :
       resolution = DS18B20_9_BIT;
-      convtime = 100;
+      convtime = 300;
       break;
     case 10 :
       resolution = DS18B20_10_BIT;
-      convtime = 200;
+      convtime = 600;
       break;
     case 11 :
       resolution = DS18B20_11_BIT;
-      convtime = 400;
+      convtime = 900;
       break;
     default :
       resolution = DS18B20_12_BIT;
-      convtime = 800;
+      convtime = 1200;
   }
 }
 
@@ -53,14 +53,14 @@ void DS18B20::initialize(void){
   onewire->reset();
   onewire->reset_search();
   sensorcount = 0;
-  delay(250);
-
+  
   while (onewire->search(addr)) {
     if (OneWire::crc8( addr, 7) == addr[7] && addr[0] != 0x00) {
       sensorcount++;
       setResolution();
     }
   }
+  delay(500);
 }
 
 uint8_t DS18B20::numBytes(void){
@@ -107,7 +107,20 @@ uint8_t DS18B20::getSensorData(char *payload, uint8_t startbyte){
       
       if (OneWire::crc8(data, 8) == data[8]) {
         int16_t rawTemp = (((int16_t)data[1]) << 8) | data[0];
-        value = ((float)0.0625*rawTemp)*100;
+        byte cfg = (data[4] & 0x60);
+        // at lower res, the low bits are undefined, so let's zero them
+        switch (cfg) {
+          case 0x00 :
+            rawTemp = rawTemp & ~7;
+            break;
+          case 0x20 :
+            rawTemp = rawTemp & ~3;
+            break;
+          case 0x40 :
+            rawTemp = rawTemp & ~1;
+            break;
+        }
+        value = ((float)rawTemp/16.0)*100;
       } else {
         value = -85;
       }
@@ -116,7 +129,9 @@ uint8_t DS18B20::getSensorData(char *payload, uint8_t startbyte){
       payload[startbyte+1] = (value >> 8) & 0XFF;
       // Set next Startbyte
       startbyte += 2;
+      delay(50);
     }
   }
+  onewire->depower();
   return startbyte;
 }
