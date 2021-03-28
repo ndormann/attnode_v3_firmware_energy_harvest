@@ -40,8 +40,12 @@ is filled in ascending order, starting with the first enabled sensor from left t
       // var i;
       // var j = 1;
       // for (i = ii; i < input.bytes.length-1; i=i+2) {
-      //  decoded["t" + j] = ((input.bytes[i]) | (input.bytes[i+1] << 8 )) / 100.0;
-      //  j++;
+      //   decoded["t" + j] = ((input.bytes[i]) | (input.bytes[i+1] << 8 ));
+      //   var sign = input.bytes[i+1] & (1 << 7);
+      //   if (sign)
+      //     decoded["t" + j] = 0xFFFF0000 | decoded["t" + j];
+      //   decoded["t" + j] = decoded["t" + j] / 100.0;
+      //   j++;
       // }
   
       // Leave this part as is
