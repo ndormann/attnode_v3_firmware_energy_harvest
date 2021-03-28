@@ -36,8 +36,13 @@ is filled in ascending order, starting with the first enabled sensor from left t
       // Atmospheric Pressure (BME280)
       // decoded.p = ((input.bytes[ii]) | (input.bytes[ii] << 8 ) | (input.bytes[ii] << 16 ) | (input.bytes[ii] << 24)) / 100.0;
 
-      // DS18B20 (add as many lines as you have sensors, changing the t1)
-      // decoded.t1 = ((input.bytes[ii]) | (input.bytes[ii] << 8 )) / 100.0;
+      // DS18B20 - Will append all recognized Sensors as t1, t2, t3...
+      // var i;
+      // var j = 1;
+      // for (i = ii; i < input.bytes.length-1; i=i+2) {
+      //  decoded["t" + j] = ((input.bytes[i]) | (input.bytes[i+1] << 8 )) / 100.0;
+      //  j++;
+      // }
   
       // Leave this part as is
       return {
