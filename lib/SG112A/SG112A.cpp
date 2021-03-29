@@ -44,7 +44,7 @@ uint8_t SG112A::getSensorData(char *payload, uint8_t startbyte) {
     if (readBytes > 0) {
         switch(buffer[2]) {
             case 0x15:
-              int16ToPayload((buffer[3]*256) + buffer[4], payload, startbyte);
+              uint16ToPayload((buffer[3]*256) + buffer[4], payload, startbyte);
               break;
         }
     }

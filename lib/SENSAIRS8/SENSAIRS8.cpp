@@ -44,7 +44,7 @@ uint8_t SENSAIRS8::getSensorData(char *payload, uint8_t startbyte) {
   payload[startbyte]   = 0x00;
   payload[startbyte+1] = 0x00;
   if (readBytes > 0) {
-    int16ToPayload((buffer[3]*256) + buffer[4], payload, startbyte);
+    uint16ToPayload((buffer[3]*256) + buffer[4], payload, startbyte);
   }
   return startbyte+2;
 }

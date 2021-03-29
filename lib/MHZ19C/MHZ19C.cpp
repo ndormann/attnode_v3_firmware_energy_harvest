@@ -51,7 +51,7 @@ uint8_t MHZ19C::getSensorData(char * payload, uint8_t startbyte) {
     if (readBytes > 0) {
         switch(buffer[1]) {
             case 0x86:
-              int16ToPayload((buffer[2]*256) + buffer[3], payload, startbyte);
+              uint16ToPayload((buffer[2]*256) + buffer[3], payload, startbyte);
               break;
         }
     }
