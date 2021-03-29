@@ -39,6 +39,18 @@ class AttSensor  {
 
     // Return the number of Bytes added to the Payload
     virtual uint8_t numBytes(void) = 0;
+
+   // Helper Functions to Put Values Into the Payload Array
+    static void int32ToPayload(int32_t value, char *payload, uint8_t startbyte) {
+      payload[startbyte]   = (value) & 0XFF;
+      payload[startbyte+1] = (value >> 8) & 0XFF;
+      payload[startbyte+2] = (value >> 16) & 0XFF;
+      payload[startbyte+3] = (value >> 24) & 0XFF;
+    }
+    static void int16ToPayload(int16_t value, char *payload, uint8_t startbyte) {
+      payload[startbyte]   = (value) & 0XFF;
+      payload[startbyte+1] = (value >> 8) & 0XFF;
+    }
 };
 
 #endif

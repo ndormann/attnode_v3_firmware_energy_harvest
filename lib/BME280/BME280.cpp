@@ -80,7 +80,7 @@ int32_t BME280::compensate_h(int32_t adc_H)
 uint8_t BME280::getSensorData(char *payload, uint8_t startbyte) {
 
 	int32_t UP, UT, UH;
-  int32_t rawP, rawT, value;
+  int32_t rawP, rawT;
 
   // Trigger Measurement
  	// Set Sensor Config
@@ -104,27 +104,13 @@ uint8_t BME280::getSensorData(char *payload, uint8_t startbyte) {
 	// Read Humidity
   UH = read16(0xFD);
 
-	
   // Temperature
-	value                = compensate_t(UT);
-  payload[startbyte]   = (value) & 0XFF;
-  payload[startbyte+1] = (value >> 8) & 0XFF;
-  payload[startbyte+2] = (value >> 16) & 0XFF;
-  payload[startbyte+3] = (value >> 24) & 0XFF;
-
+	int32ToPayload(compensate_t(UT), payload, startbyte);
   // Humidity
-  value                = compensate_h(UH);
-  payload[startbyte+4] = (value) & 0XFF;
-  payload[startbyte+5] = (value >> 8) & 0XFF;
-  payload[startbyte+6] = (value >> 16) & 0XFF;
-  payload[startbyte+7] = (value >> 24) & 0XFF;
-
+  int32ToPayload(compensate_h(UH), payload, startbyte+4);
   // Pressure
-  value                 = compensate_p(UP);
-  payload[startbyte+8]  = (value) & 0XFF;
-  payload[startbyte+9]  = (value >> 8) & 0XFF;
-  payload[startbyte+10] = (value >> 16) & 0XFF;
-  payload[startbyte+11] = (value >> 24) & 0XFF;
+  int32ToPayload(compensate_p(UP), payload, startbyte+8);
+  
   return startbyte+12;
 }
 

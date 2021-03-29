@@ -125,8 +125,8 @@ uint8_t DS18B20::getSensorData(char *payload, uint8_t startbyte){
         value = -85;
       }
       // Add to Payload
-      payload[startbyte]   = (value) & 0XFF;
-      payload[startbyte+1] = (value >> 8) & 0XFF;
+      int16ToPayload(value, payload, startbyte);
+
       // Set next Startbyte
       startbyte += 2;
       delay(50);

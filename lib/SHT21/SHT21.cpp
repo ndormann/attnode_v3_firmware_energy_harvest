@@ -54,18 +54,9 @@ uint16_t SHT21::sensorRead(uint8_t command) {
 
 uint8_t SHT21::getSensorData(char *payload, uint8_t startbyte) {
   // Temperature
-  int32_t value = (int32_t)((-46.85 + 175.72 / 65536.0 * (float)(sensorRead(SHT21_TEMPHOLD)))*100);
-  payload[startbyte]   = (value) & 0XFF;
-  payload[startbyte+1] = (value >> 8) & 0XFF;
-  payload[startbyte+2] = (value >> 16) & 0XFF;
-  payload[startbyte+3] = (value >> 24) & 0XFF;
-
+  int32ToPayload((int32_t)((-46.85 + 175.72 / 65536.0 * (float)(sensorRead(SHT21_TEMPHOLD)))*100), payload, startbyte);
   // Humidity
-  value = (int32_t)((-6.0 + 125.0 / 65536.0 * (float)(sensorRead(SHT21_HUMIHOLD)))*100);
-  payload[startbyte+4]  = (value) & 0XFF;
-  payload[startbyte+5]  = (value >> 8) & 0XFF;
-  payload[startbyte+6] = (value >> 16) & 0XFF;
-  payload[startbyte+7] = (value >> 24) & 0XFF;
-
+  int32ToPayload((int32_t)((-6.0 + 125.0 / 65536.0 * (float)(sensorRead(SHT21_HUMIHOLD)))*100), payload, startbyte+4);
+  
   return startbyte+8;
 }
