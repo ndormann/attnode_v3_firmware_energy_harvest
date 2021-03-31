@@ -29,8 +29,15 @@
 
 // Constructor - Inititalize Hardware UART
 MHZ19C::MHZ19C(void) {
-    Serial.begin(9600);
-    Serial.setTimeout(MHZ19C_READ_TIMEOUT);
+  Serial.begin(9600);
+  Serial.setTimeout(MHZ19C_READ_TIMEOUT);
+}
+
+MHZ19C::MHZ19C(pin_size_t calpin) {
+  this->calpin = calpin;
+  
+  Serial.begin(9600);
+  Serial.setTimeout(MHZ19C_READ_TIMEOUT);
 }
 
 void MHZ19C::initialize(void) {
@@ -39,6 +46,14 @@ void MHZ19C::initialize(void) {
   #else
   setSelfCalibration(0);
   #endif
+}
+
+void MHZ19C::calibrate(void) {
+  pinMode(calpin, OUTPUT);
+  digitalWrite(calpin, LOW);
+  delay(7500);
+  digitalWrite(calpin, HIGH);
+  pinMode(PIN_PB4, INPUT_PULLUP);
 }
 
 uint8_t MHZ19C::getSensorData(char * payload, uint8_t startbyte) {

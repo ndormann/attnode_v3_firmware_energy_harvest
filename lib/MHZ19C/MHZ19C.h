@@ -38,6 +38,7 @@
 class MHZ19C : public AttSensor {
   private:
     uint8_t buffer[MHZ19C_SER_BUF_LEN];
+    pin_size_t calpin = PIN_PB4; // PB4 is the Calibration Pin on the Addon PCB
 
     void write(byte cmd, byte arg);
     uint8_t read();
@@ -47,7 +48,9 @@ class MHZ19C : public AttSensor {
 
   public:
     MHZ19C(void);
+    MHZ19C(pin_size_t calpin);
     void initialize(void);
+    void calibrate(void);
     uint8_t numBytes(void) {return 2;};
     uint8_t getSensorData(char *payload, uint8_t startbyte);
     void setSelfCalibration(bool state);

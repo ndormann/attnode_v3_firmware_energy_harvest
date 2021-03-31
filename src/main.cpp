@@ -364,17 +364,14 @@ void setup()
 void loop()
 {
   // Handle long Button Press for Calibration with MH-Z19C Sensor
-  #if defined HAS_MHZ19C && defined BTN_PIN
+  #ifdef BTN_PIN
   if  (digitalRead(BTN_PIN) == LOW) {
-    // Press Button longer than 4 Seconds -> Start MH-Z19C Calibration Routine
+    // Press Button longer than 4 Seconds -> Start Sensor Calibration Routine (if applicable)
     unsigned long loop_millis = millis();
     if ((unsigned long)(loop_millis - btn_millis) >= 4000) {
       WS2812B_SETLED(1,153,0,153);
-      pinMode(PIN_PB4, OUTPUT);
-      digitalWrite(PIN_PB4, LOW);
-      delay(7500);
-      digitalWrite(PIN_PB4, HIGH);
-      pinMode(PIN_PB4, INPUT_PULLUP);
+      for (uint8_t i=0; i<NUM_SENSORS; i++)
+        sensors[i]->calibrate();
       WS2812B_SETLED(1,0,0,0);
     } else {
       delay(500);
@@ -383,7 +380,7 @@ void loop()
   #endif
     // Only Run the LMIC loop here. Actual Sending Code is in do_send()
     os_runloop_once(); 
-  #if defined HAS_MHZ19C && defined BTN_PIN
+  #ifdef BTN_PIN
   }
   #endif
 }
