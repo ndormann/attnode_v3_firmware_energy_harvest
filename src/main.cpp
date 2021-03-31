@@ -149,6 +149,7 @@ void onEvent(ev_t ev) {
     case EV_JOINED:
       // Disable LinkCheck
       LMIC_setLinkCheckMode(0);
+      BLINK_LED(2);
       WS2812B_BLINK(1,0,127,0,1000);
       DEBUG_PRINTLN("OTAA Join Succeeded");
       break;
@@ -172,7 +173,7 @@ void onEvent(ev_t ev) {
       for (uint16_t i = 0; i < sleep_time*2; i++) {
         // Cancel sleep Cycle if Button was Pressed
         #ifdef BTN_PIN
-        if (btn_pressed) {
+        if (btn_pressed  && digitalRead(BTN_PIN) == HIGH) {
           i = sleep_time*2;
           btn_pressed = 0;
         } else {
@@ -370,8 +371,11 @@ void loop()
     unsigned long loop_millis = millis();
     if ((unsigned long)(loop_millis - btn_millis) >= 4000) {
       WS2812B_SETLED(1,153,0,153);
+      BLINK_LED(3);
+      delay(1000);
       for (uint8_t i=0; i<NUM_SENSORS; i++)
         sensors[i]->calibrate();
+      BLINK_LED(1);
       WS2812B_SETLED(1,0,0,0);
     } else {
       delay(500);

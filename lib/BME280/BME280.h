@@ -33,6 +33,7 @@ private:
 public:
   BME280(void);
   uint8_t getSensorData(char *payload, uint8_t startbyte);
+  void calibrate(void) {};
   void initialize(void) {getCalData();};
   uint8_t numBytes(void) {return 12;};
 };

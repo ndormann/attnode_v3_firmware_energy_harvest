@@ -61,9 +61,10 @@ class SCD30 : public AttSensor {
     SCD30();
     SCD30(uint8_t interval, bool selfcalib);
     void initialize(void);
+    void calibrate(void);
     uint8_t numBytes(void) {return 6;};
     uint8_t getSensorData(char *payload, uint8_t startbyte);
-    void calibrate();
+    
 };
 
 #endif

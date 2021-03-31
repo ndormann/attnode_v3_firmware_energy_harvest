@@ -50,6 +50,7 @@ class DS18B20 : public AttSensor {
   public:
     DS18B20(uint8_t owpin, uint8_t resbits = 12, bool para = false);
     uint8_t getSensorData(char *payload, uint8_t startbyte);
+    void calibrate(void) {};
     void initialize(void);
     uint8_t numBytes(void);
 };

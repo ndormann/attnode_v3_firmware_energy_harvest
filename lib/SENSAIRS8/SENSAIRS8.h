@@ -43,6 +43,7 @@ class SENSAIRS8 : public AttSensor {
   public:
     SENSAIRS8(void);
     uint8_t getSensorData(char *payload, uint8_t startbyte);
+    void calibrate(void) {};
     void initialize(void) {};
     uint8_t numBytes(void) {return 2;};
 };

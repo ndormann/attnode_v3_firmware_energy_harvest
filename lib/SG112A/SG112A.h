@@ -49,6 +49,7 @@ class SG112A : public AttSensor {
   public:
     SG112A(void);
     uint8_t getSensorData(char *payload, uint8_t startbyte);
+    void calibrate(void) {};
     void initialize(void) {};
     uint8_t numBytes(void) {return 2;};
 };

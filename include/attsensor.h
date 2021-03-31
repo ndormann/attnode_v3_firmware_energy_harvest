@@ -40,8 +40,8 @@ class AttSensor  {
     // Return the number of Bytes added to the Payload
     virtual uint8_t numBytes(void) = 0;
 
-    // Calibrate a Sensor. Needs to be Implemented in the Child Class if supported
-    void calibrate(void) {};
+    // Calibrate a Sensor. Needs to be Implemented in the Child Class
+    virtual void calibrate(void) = 0;
 
     // Helper Functions to Put Values Into the Payload Array
     static void int32ToPayload(int32_t value, char *payload, uint8_t startbyte) {

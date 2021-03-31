@@ -85,7 +85,7 @@ uint8_t SCD30::getSensorData(char *payload, uint8_t startbyte) {
 }
 
 // Calibrate the Sensor to 400ppm (Outside Level)
-void SCD30::calibrate() {
+void SCD30::calibrate(void) {
   sendCmd(SCD30_SET_RECALIB, 400);
 }
 
