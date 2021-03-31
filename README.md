@@ -43,7 +43,7 @@ You need to specify a Payload Decoder fitting for your configured Sensors for a 
       
       var i = 1;
       /* Start CO2-Sensor (SG112A, MH-Z19C, Sensair S8, Sensirion SCD30) PPM */
-      // decoded.ppm = ((input.bytes[ii]) | (input.bytes[ii] << 8 ));
+      // decoded.ppm = bytesUToInt16(input.bytes, i);
       // i += 2;
       /* End CO2 Sensor PPM */
 
@@ -70,8 +70,8 @@ You need to specify a Payload Decoder fitting for your configured Sensors for a 
          Will append all recognized Sensors as t1, t2, t3... */
       // var n = 1;
       // for (var j = i; j < input.bytes.length-1; j+=2) {
-      //   decoded["t" + n] = bytesToInt16(input.bytes, j);
-      //   j++;
+      //   decoded["t" + n] = bytesToInt16(input.bytes, j)/100;
+      //   n++;
       // }
       /* End DS18B20 Temperatures */
   
