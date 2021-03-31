@@ -16,39 +16,66 @@ Before programming a node, copy src/config.h.example to src/config.h and set the
 
 Programming is done using a [MicroUPDI Programmer](https://github.com/MCUdude/microUPDI), settings in platformio.ini are set to use it. For other pogrammer options see the PlatformIO Documentation
 
-## Multisensor Mode
+## Payload Decoder
 
-The Firmware can be configured for multiple sensors at once (see comments in config.h.example). In this case the default payload decoder from the website will not be able to correctly determine the used sensors. You **must** define a specific decoder in this case. In the TTN v3 Stack a decoder can be set per device. Use the following as an example, and uncomment the parts for each enabled sensor, then make sure the placeholder for the byte index (**ii**) 
-is filled in ascending order, starting with the first enabled sensor from left to right, beginning with 1
+You need to specify a Payload Decoder fitting for your configured Sensors for a Node. The Following code Shows an example for a Payload Decoder usable with TTN Stack v3. Uncomment the Parts for your used sensors. There is a Start and End comment for each possible sensor/value, uncomment the Lines between them (The ones starting with //) to activate the Decoding for a particular Sensor. Be aware that there might be an overlap in the sensor namings for sensors with the same Values (e.g. SCD30 and BME280/SHT21 all report Temperature and Humidity. If you use them in parallel you might want to change the names of the decoded fields).
+
+    function bytesToInt16(bytes, start) {
+      var out  = ((bytes[start]) | (bytes[start+1] << 8 ));
+      var sign = bytes[start+1] & (1 << 7);
+      if (sign)
+        out = 0xFFFF0000 | out;
+      return out;
+    }
+
+    function bytesToUInt16(bytes, start) {
+      return ((bytes[start]) | (bytes[start+1] << 8 ));
+    }
+
+    function bytesToInt32(bytes, start) {
+      return ((bytes[start]) | (bytes[start+1] << 8) | (bytes[start+2] << 16) | (bytes[start+3] << 24));
+    }
 
     function decodeUplink(input) {
       var decoded = {};
-      // Battery Voltage, always enabled
+      /* Battery Voltage, always enabled */
       decoded.v = (input.bytes[0] * 20) / 1000.0;
       
-      // CO2-Sensor (SG112A, MH-Z19C, Sensair S8)
+      var i = 1;
+      /* Start CO2-Sensor (SG112A, MH-Z19C, Sensair S8, Sensirion SCD30) PPM */
       // decoded.ppm = ((input.bytes[ii]) | (input.bytes[ii] << 8 ));
+      // i += 2;
+      /* End CO2 Sensor PPM */
 
-      // Temperature and Humidity (BME280 / SHT21)
-      // decoded.t = ((input.bytes[ii]) | (input.bytes[ii] << 8 ) | (input.bytes[ii] << 16 ) | (input.bytes[ii] << 24)) / 100.0;
-      // decoded.h = ((input.bytes[ii]) | (input.bytes[ii] << 8 ) | (input.bytes[ii] << 16 ) | (input.bytes[ii] << 24)) / 100.0;
+      /* Start Temperature + Humidity SCD30 */
+      // decoded.t = bytesToInt16(input.bytes, i)/100;
+      // decoded.h = bytesUToInt16(input.bytes, i+2)/100;
+      // i += 4;
+      /* End Temperature + Humidity SCD30 */
+      
+      /* Start Temperature and Humidity (SHT21) */
+      // decoded.t = bytesToInt32(input.bytes, i)/100;
+      // decoded.h = bytesToInt32(input.bytes, i+4)/100;
+      // i += 8;
+      /* End Temperature + Humidity BME/SHT */
+      
+      /* Start Temperature, Humidity, Atmospheric Pressure (BME280) */
+      // decoded.t = bytesToInt32(input.bytes, i)/100;
+      // decoded.h = bytesToInt32(input.bytes, i+4)/100;
+      // decoded.p = bytesToInt32(input.bytes, i+8)/100;
+      // i += 12;
+      /* End Atmospheric Pressure
 
-      // Atmospheric Pressure (BME280)
-      // decoded.p = ((input.bytes[ii]) | (input.bytes[ii] << 8 ) | (input.bytes[ii] << 16 ) | (input.bytes[ii] << 24)) / 100.0;
-
-      // DS18B20 - Will append all recognized Sensors as t1, t2, t3...
-      // var i;
-      // var j = 1;
-      // for (i = ii; i < input.bytes.length-1; i=i+2) {
-      //   decoded["t" + j] = ((input.bytes[i]) | (input.bytes[i+1] << 8 ));
-      //   var sign = input.bytes[i+1] & (1 << 7);
-      //   if (sign)
-      //     decoded["t" + j] = 0xFFFF0000 | decoded["t" + j];
-      //   decoded["t" + j] = decoded["t" + j] / 100.0;
+      /* Start DS18B20 Temperatures 
+         Will append all recognized Sensors as t1, t2, t3... */
+      // var n = 1;
+      // for (var j = i; j < input.bytes.length-1; j+=2) {
+      //   decoded["t" + n] = bytesToInt16(input.bytes, j);
       //   j++;
       // }
+      /* End DS18B20 Temperatures */
   
-      // Leave this part as is
+      /* Leave this part as is */
       return {
         data: decoded,
         warnings: [],

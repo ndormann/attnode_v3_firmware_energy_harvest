@@ -34,7 +34,7 @@ SCD30::SCD30() {};
 
 // Constructor with Measuring Interval and Autocalibration Status
 SCD30::SCD30(uint8_t interval, bool selfcalib) {
-    this->interval  = interval; 
+    this->interval  = interval;
     this->selfcalib = selfcalib;
 }
 
@@ -68,11 +68,11 @@ uint8_t SCD30::getSensorData(char *payload, uint8_t startbyte) {
   if (ready[1] == 1){
     // Get All Measurements (18 Bytes)
     getBytes(SCD30_GET_MEASURE, data, 18);
-    
+
     // CO2 PPM
     int16_t value = (int16_t)(byteToFloat(data[0], data[1], data[3], data[4]));
     int16ToPayload(value, payload, startbyte);
-    
+
     // Temperature
     value = (int16_t)(byteToFloat(data[6], data[7], data[9], data[10])*100);
     int16ToPayload(value, payload, startbyte+2);
@@ -127,7 +127,7 @@ void SCD30::getBytes(uint16_t reg, uint8_t bytes[], uint8_t len) {
   if (Wire.available()) {
     for (uint8_t i = 0; i<len; i++)
       bytes[i] = Wire.read();
-  }  
+  }
 }
 
 // Calculate CRC8

@@ -54,6 +54,7 @@
 // #define HAS_MHZ19C
 // #define HAS_SG112A
 // #define HAS_SENSAIRS8
+// #define HAS_SCD30
 // #define HAS_BME280
 // #define HAS_SHT21
 // #define HAS_DS18B20
