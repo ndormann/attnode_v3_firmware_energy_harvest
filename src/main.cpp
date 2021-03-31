@@ -27,6 +27,9 @@
 #ifdef HAS_SENSAIRS8
   #include <SENSAIRS8.h>
 #endif
+#ifdef HAS_SCD30
+  #include <SCD30.h>
+#endif
 #ifdef HAS_BME280
   #include <BME280.h>
 #endif
@@ -301,12 +304,16 @@ void setup()
     sensors[i] = new SENSAIRS8();
     i++;
   #endif
-   #ifdef HAS_BME280
+  #ifdef HAS_SCD30
+    sensors[i] = new SCD30();
+    i++;
+  #endif
+  #ifdef HAS_BME280
     sensors[i] = new BME280();
     i++;
   #endif
   #ifdef HAS_SHT21
-    sensors[i] = new SHT21()
+    sensors[i] = new SHT21();
     i++;
   #endif
   #ifdef HAS_DS18B20
