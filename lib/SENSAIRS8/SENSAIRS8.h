@@ -35,6 +35,7 @@
 class SENSAIRS8 : public AttSensor {
   private:
     uint8_t buffer[SER_BUF_LEN];
+    pin_size_t calpin = PIN_PB4; // PB4 is the Calibration Pin on the Addon PCB
 
     uint8_t read();
     void zeroBuffer(void);
@@ -43,8 +44,8 @@ class SENSAIRS8 : public AttSensor {
   public:
     SENSAIRS8(void);
     uint8_t getSensorData(char *payload, uint8_t startbyte);
-    void calibrate(void) {};
-    void initialize(void) {};
+    void calibrate(void);
+    void initialize(void);
     uint8_t numBytes(void) {return 2;};
 };
 

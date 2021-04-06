@@ -53,7 +53,7 @@ void MHZ19C::calibrate(void) {
   digitalWrite(calpin, LOW);
   delay(7500);
   digitalWrite(calpin, HIGH);
-  pinMode(PIN_PB4, INPUT_PULLUP);
+  pinMode(calpin, INPUT_PULLUP);
 }
 
 uint8_t MHZ19C::getSensorData(char * payload, uint8_t startbyte) {

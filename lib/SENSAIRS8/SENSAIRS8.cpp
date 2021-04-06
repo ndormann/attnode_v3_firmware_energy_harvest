@@ -49,6 +49,22 @@ uint8_t SENSAIRS8::getSensorData(char *payload, uint8_t startbyte) {
   return startbyte+2;
 }
 
+void SENSAIRS8::calibrate(void) {
+  pinMode(calpin, OUTPUT);
+  digitalWrite(calpin, LOW);
+  delay(5000);
+  digitalWrite(calpin, HIGH);
+  pinMode(calpin, INPUT_PULLUP);
+}
+
+void SENSAIRS8::initialize(void) {
+  // Disable Auto Background Calibration
+  uint8_t _cmd[8] = {0xFE, 0x06, 0x00, 0x01F, 0x00, 0x00, 0xAC, 0x03};
+  while (Serial.available() > 0) Serial.read();
+    Serial.write(_cmd, 8);
+    Serial.flush();
+}
+
 // Read a Sensor Response
 uint8_t SENSAIRS8::read() {
     // Number of returned Bytes
