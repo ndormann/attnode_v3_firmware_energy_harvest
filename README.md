@@ -87,7 +87,9 @@ Please be also aware, that not all sensor combinations are valid. Some might use
 
 ## Configuring via Downlink
 
-It is possible to change the sending interval via Downlink-Packets at runtime. The time between Transmits is specified in minutes (or more exactly, 64 Second intervals) and has to be sent as a 2 byte value, which will be interpreted as an uint. so for example 0x0001 means 1 Minute, 0x0002 means 2 Minutes and so on. Sending 0xFFFF resets the value to the compiled in default.
+It is possible to change the sending interval via Downlink-Packets at runtime. Downlinks for setting the transmit interval have to be sent on port 1. The time between Transmits is specified in minutes (or more exactly, 64 Second intervals) and as a 2 byte value, which will be interpreted as an uint. So for example 0x0001 means 1 Minute, 0x0002 means 2 Minutes and so on. Sending 0xFFFF resets the value to the compiled in default.
+
+Sending an arbitrary value on port 2 will activate the calibration sequence for sensors that support it (like some of the CO2-Sensors).
 
 ## Acknowledgements
 
