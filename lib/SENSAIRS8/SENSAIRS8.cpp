@@ -52,7 +52,7 @@ uint8_t SENSAIRS8::getSensorData(char *payload, uint8_t startbyte) {
 void SENSAIRS8::calibrate(void) {
   pinMode(calpin, OUTPUT);
   digitalWrite(calpin, LOW);
-  delay(5000);
+  delay(6000);
   digitalWrite(calpin, HIGH);
   pinMode(calpin, INPUT_PULLUP);
 }

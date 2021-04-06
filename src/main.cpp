@@ -157,15 +157,32 @@ void onEvent(ev_t ev) {
       // Check for Downlink
       DEBUG_PRINTLN("LoRa Packet Sent");
       WS2812B_BLINK(1,0,127,0,1000);
-      if ((int)LMIC.dataLen == 2) {
-        // We got a Packet with the right size - lets assemble it into a uint16_t
-        DEBUG_PRINTLN("Received Downlink")
-        uint16_t tmpslp = (LMIC.frame[LMIC.dataBeg] << 8) | LMIC.frame[LMIC.dataBeg+1];
-        DEBUG_PRINT("Setting Sleep Time to: ");
-        DEBUG_PRINTLN(tmpslp);
-        sleep_time = tmpslp;
-        EEPROM.put(ADDR_SLP, tmpslp);
-        WS2812B_BLINK(1,0,0,127,250);
+      if ((int)LMIC.dataLen > 0) {
+        // Check for Downlinks
+        // Function based in Ports:
+        // Port 1
+        //   Set Sending Interval
+        // Port 2
+        //   Do Calibration
+        switch((uint8_t)LMIC.frame[LMIC.dataBeg-1]) {
+          case 1:
+            if ((int)LMIC.dataLen == 2) {
+              // We got a Packet with the right size - lets assemble it into a uint16_t
+              DEBUG_PRINTLN("Received Downlink")
+              uint16_t tmpslp = (LMIC.frame[LMIC.dataBeg] << 8) | LMIC.frame[LMIC.dataBeg+1];
+              DEBUG_PRINT("Setting Sleep Time to: ");
+              DEBUG_PRINTLN(tmpslp);
+              sleep_time = tmpslp;
+              EEPROM.put(ADDR_SLP, tmpslp);
+              WS2812B_BLINK(1,0,0,127,250);
+            }
+            break;
+          case 2:
+            for (uint8_t i=0; i<NUM_SENSORS; i++)
+              sensors[i]->calibrate();
+            BLINK_LED(3);
+            break;
+        }
       }
 
       // Got to sleep for specified Time
