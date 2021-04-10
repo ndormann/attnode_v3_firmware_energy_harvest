@@ -18,7 +18,7 @@ Programming is done using a [MicroUPDI Programmer](https://github.com/MCUdude/mi
 
 ## Payload Decoder
 
-You need to specify a Payload Decoder fitting for your configured Sensors for a Node. See payload/index.html in this repository. Open it in your Browser of Choice and select the enabled sensors. It will generate the Payload Decoder fitting for the choosen Sensors. You can also use the Online Version at [attnode.de](https://attno.de/payload-decoder)
+You need to specify a Payload Decoder fitting for your configured Sensors for a Node. See payload/index.html in this repository. Open it in your Browser of Choice and select the enabled sensors. It will generate the Payload Decoder fitting for the choosen Sensors. You can also use the Online Version at [attno.de](https://www.attno.de/payload-generator)
 
 ## Configuring via Downlink
 
