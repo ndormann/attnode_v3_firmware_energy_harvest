@@ -1,0 +1,173 @@
+<!doctype html>
+
+<html>
+  <head>
+    <title>AttNode v3 Payload Decoder Generator</title>
+    <meta name="description" content="AttNode v3 Payload Decoder Generator">
+    <meta name="author" content="Stefan Brand">
+    <style>
+      body {
+        background-color: #e9eaec;
+        font-family: Roboto, sans-serif;
+        font-size: 1em;
+        padding: 24px;
+      }
+      div {
+        background: #f8f8f8;
+        border: 1px solid #ccc;
+        padding: 1em 2em;
+        margin-bottom: 40px;
+      }
+
+      pre {
+        border: 1px solid black;
+        font-family: monospace, monospace;
+        font-size: 1em;
+        padding: 4px;
+      }
+
+    </style>
+  </head>
+  <body>
+    
+    <div class="title">
+    <h1>AttNode v3 Payload Decoder Generator</h1>
+  </div>
+    <div class="header">
+      <p>Please choose the Sensors that you have enabled in the Firmware. The Payload Decoder code below will change accordingly.</p>
+      <p>Notes:</p>
+      <ul>
+        <li>You can set arbitary combinations of Sensors here. Not all of them are useable / technically possible</li>
+        <li>Enable only the sensors in the decoder, which are enabled in the firmware for a particular device. The Decoder does not detect which sensors are present in the LoRa paket. You can set a payload decoder per device in TTN v3 to have nodes with different sensors in one application</li>
+        <li>The Payload Decoder shown here is for TTN v3 / The Things Stack v3. If you use other LoRa Stacks you may have to change the <b>decodeUplink</b> function and its return value.</li>
+      </ul>
+    </div>
+    <div class="chooser">
+      <h3>Sensors:</h3>
+      <form id="chooserForm">
+        <label>
+          <input type="checkbox" value="mhz19c" onchange="updateDecoder();">
+          MH-Z19C
+        </label>
+        <label>
+          <input type="checkbox" value="sg112a" onchange="updateDecoder();">
+          SG112A
+        </label>
+        <label>
+          <input type="checkbox" value="sensairs8" onchange="updateDecoder();">
+          Sensair S8
+        </label>
+        <label>
+          <input type="checkbox" value="scd30" onchange="updateDecoder();">
+          SCD30
+        </label>
+        <label>
+          <input type="checkbox" value="bme280" onchange="updateDecoder();">
+          BME280
+        </label>
+        <label>
+          <input type="checkbox" value="sht21" onchange="updateDecoder();">
+          SHT21
+        </label>
+        <label>
+          <input type="checkbox" value="ds18b20" onchange="updateDecoder();">
+          DS18B20
+        </label>
+      </form>
+      <h3>Payload Decoder:</h3>
+      <pre id="pd">
+      </pre>
+    </div>
+    <script>
+      var sensors = {
+        "mhz19c": [
+          { "name": "co2ppm", "type": "UInt16", "factor": 1, "multi": false },
+        ],
+        "sg112a": [
+          { "name": "co2ppm", "type": "UInt16", "factor": 1, "multi": false },
+        ],
+        "sensairs8": [
+          { "name": "co2ppm", "type": "UInt16", "factor": 1, "multi": false },
+        ],
+        "scd30": [
+          { "name": "co2ppm", "type": "UInt16", "factor": 1, "multi": false },
+          { "name": "temperature", "type": "Int16", "factor": 100, "multi": false },
+          { "name": "humidity", "type": "UInt16", "factor": 100, "multi": false },
+        ],
+        "bme280": [
+          { "name": "temperature", "type": "Int32", "factor": 100, "multi": false },
+          { "name": "humidity", "type": "Int32", "factor": 100, "multi": false },
+          { "name": "pressure", "type": "Int32", "factor": 100, "multi": false },
+        ],
+        "sht21": [
+          { "name": "temperature", "type": "Int32", "factor": 100, "multi": false },
+          { "name": "humidity", "type": "Int32", "factor": 100, "multi": false },
+        ],
+        "ds18b20": [
+          { "name": "t", "type": "Int16", "factor": 100, "multi": true },
+        ]
+      };
+      var typelen = {"Int32": "4", "Int16": "2", "UInt16": "2"};
+
+      function updateDecoder() {
+        var output = document.getElementById("pd");
+
+        output.innerHTML  = "function bytesToInt16(bytes, start) {\n";
+        output.innerHTML += "  var out  = ((bytes[start]) | (bytes[start+1] << 8 ));\n";
+        output.innerHTML += "  var sign = bytes[start+1] & (1 << 7);\n";
+        output.innerHTML += "  if (sign)\n";
+        output.innerHTML += "    out = 0xFFFF0000 | out;\n";
+        output.innerHTML += "  return out;\n";
+        output.innerHTML += "}\n\n";
+        output.innerHTML += "function bytesToUInt16(bytes, start) {\n";
+        output.innerHTML += "  return ((bytes[start]) | (bytes[start+1] << 8 ));\n";
+        output.innerHTML += "}\n\n";
+        output.innerHTML += "function bytesToInt32(bytes, start) {\n";
+        output.innerHTML += "  return ((bytes[start]) | (bytes[start+1] << 8) | (bytes[start+2] << 16) | (bytes[start+3] << 24));\n";
+        output.innerHTML += "}\n\n";
+        output.innerHTML += "function decodeUplink(input) {\n";
+        output.innerHTML += "  var decoded = {};\n";
+        output.innerHTML += "  /* Battery Voltage, always enabled */\n";
+        output.innerHTML += "  decoded.v = (input.bytes[0] * 20) / 1000.0;\n\n";
+        output.innerHTML += "  var i = 1;\n";
+
+        var elements = document.getElementById("chooserForm").elements;
+
+        for (var i = 0, element; element = elements[i++];) {
+          if (element.type === "checkbox")
+            if (element.checked) {
+              sensors[element.value].forEach(sensor => {
+                if (sensor.multi) {
+                  output.innerHTML += "  var n = 1;\n";
+                  output.innerHTML += "  for (var j = i; j < input.bytes.length-1; j+=2) {\n";
+                  if (sensor.factor > 1)  {
+                    output.innerHTML += "    decoded['" + sensor.name + "' + n] = bytesTo" + sensor.type + " (input.bytes, j);\n";
+                  } else {
+                    output.innerHTML += "    decoded['" + sensor.name + "' + n] = bytesTo" + sensor.type + " (input.bytes, j)/" + sensor.factor + ";\n";
+                  }
+                  output.innerHTML += "    n++;\n";
+                  output.innerHTML += "  }\n";
+
+                } else {
+                  if (sensor.factor > 1)  {
+                    output.innerHTML += "  decoded." + sensor.name + " = bytesTo" + sensor.type + "(input.bytes, i)/" + sensor.factor + ";\n";
+                  } else {
+                    output.innerHTML += "  decoded." + sensor.name + " = bytesTo" + sensor.type + "(input.bytes, i);\n";
+                  }
+                  output.innerHTML += "  i += " + typelen[sensor.type] + ";\n";
+                }
+              });
+            }
+        }
+
+        output.innerHTML += "\n\n  return {\n";
+        output.innerHTML += "   data: decoded,\n";
+        output.innerHTML += "    warnings: [],\n";
+        output.innerHTML += "    errors: []\n";
+        output.innerHTML += "  };\n";
+        output.innerHTML += "}\n";
+      }
+    
+    </script>
+  </body>
+</html>
