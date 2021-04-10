@@ -18,72 +18,7 @@ Programming is done using a [MicroUPDI Programmer](https://github.com/MCUdude/mi
 
 ## Payload Decoder
 
-You need to specify a Payload Decoder fitting for your configured Sensors for a Node. The Following code Shows an example for a Payload Decoder usable with TTN Stack v3. Uncomment the Parts for your used sensors. There is a Start and End comment for each possible sensor/value, uncomment the Lines between them (The ones starting with //) to activate the Decoding for a particular Sensor. Be aware that there might be an overlap in the sensor namings for sensors with the same Values (e.g. SCD30 and BME280/SHT21 all report Temperature and Humidity. If you use them in parallel you might want to change the names of the decoded fields).
-
-    function bytesToInt16(bytes, start) {
-      var out  = ((bytes[start]) | (bytes[start+1] << 8 ));
-      var sign = bytes[start+1] & (1 << 7);
-      if (sign)
-        out = 0xFFFF0000 | out;
-      return out;
-    }
-
-    function bytesToUInt16(bytes, start) {
-      return ((bytes[start]) | (bytes[start+1] << 8 ));
-    }
-
-    function bytesToInt32(bytes, start) {
-      return ((bytes[start]) | (bytes[start+1] << 8) | (bytes[start+2] << 16) | (bytes[start+3] << 24));
-    }
-
-    function decodeUplink(input) {
-      var decoded = {};
-      /* Battery Voltage, always enabled */
-      decoded.v = (input.bytes[0] * 20) / 1000.0;
-      
-      var i = 1;
-      /* Start CO2-Sensor (SG112A, MH-Z19C, Sensair S8, Sensirion SCD30) PPM */
-      // decoded.ppm = bytesUToInt16(input.bytes, i);
-      // i += 2;
-      /* End CO2 Sensor PPM */
-
-      /* Start Temperature + Humidity SCD30 */
-      // decoded.t = bytesToInt16(input.bytes, i)/100;
-      // decoded.h = bytesUToInt16(input.bytes, i+2)/100;
-      // i += 4;
-      /* End Temperature + Humidity SCD30 */
-      
-      /* Start Temperature and Humidity (SHT21) */
-      // decoded.t = bytesToInt32(input.bytes, i)/100;
-      // decoded.h = bytesToInt32(input.bytes, i+4)/100;
-      // i += 8;
-      /* End Temperature + Humidity BME/SHT */
-      
-      /* Start Temperature, Humidity, Atmospheric Pressure (BME280) */
-      // decoded.t = bytesToInt32(input.bytes, i)/100;
-      // decoded.h = bytesToInt32(input.bytes, i+4)/100;
-      // decoded.p = bytesToInt32(input.bytes, i+8)/100;
-      // i += 12;
-      /* End Atmospheric Pressure
-
-      /* Start DS18B20 Temperatures 
-         Will append all recognized Sensors as t1, t2, t3... */
-      // var n = 1;
-      // for (var j = i; j < input.bytes.length-1; j+=2) {
-      //   decoded["t" + n] = bytesToInt16(input.bytes, j)/100;
-      //   n++;
-      // }
-      /* End DS18B20 Temperatures */
-  
-      /* Leave this part as is */
-      return {
-        data: decoded,
-        warnings: [],
-        errors: []
-      };
-    }
-
-Please be also aware, that not all sensor combinations are valid. Some might use the same interface and interfere with each others readings. Also keep in mind that RAM- and Flash-Space are limited, which might lead to crashes or the code not compiling/flashing correctly if to many sensors are enabled at the same time.
+You need to specify a Payload Decoder fitting for your configured Sensors for a Node. See payload/index.html in this repository. Open it in your Browser of Choice and select the enabled sensors. It will generate the Payload Decoder fitting for the choosen Sensors. You can also use the Online Version at [attnode.de](https://attno.de/payload-decoder)
 
 ## Configuring via Downlink
 
