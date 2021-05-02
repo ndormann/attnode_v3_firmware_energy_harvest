@@ -1,14 +1,14 @@
 # ATTNode v3 Firmware
 
+This is the code repository for ATTNode v3 compatible firmware. At the moment it supports LoRa communication using OTAA and a growing number of sensor, like the BME280 and SHT21 for temperature, humidity and atmospheric pressure, MH-Z19C and SCD30 for CO2 or HM330x for Particulate Matter. It also uses deep sleep to save energy between Measurements.
+
+The firmware is developed using [PlatformIO](https://platformio.org/). At least version 5.1.0 is needed for ATTiny3216 support.
+
 ## Documentation
 
 **The full documentation for firmware options, payload decoders and programming can be found at [attno.de](https://www.attno.de/21-firmware-v3)**
 
 ## Configuration and Programming
-
-This is the code repository for ATTNode v3 compatible firmware. At the moment it supports LoRa communication using OTAA and a BME280 or SHT21 sensor, as well as deep sleep between measurements.
-
-The firmware is developed using [PlatformIO](https://platformio.org/). At least version 5.1.0 is needed for ATTiny3216 support.
 
 To set the fuses for clock speed, BOD levels etc., use the "Set Fuses" operation in PlatformIO. This has to be done once for a "fresh" Node or when the Board Config in platformio.ini was changed. Afterwards it is enough to use the normal "Upload" function for Code or config.h changes.
 
