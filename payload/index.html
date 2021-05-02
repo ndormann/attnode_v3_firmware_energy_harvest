@@ -70,6 +70,10 @@
           SHT21
         </label>
         <label>
+          <input type="checkbox" value="hm330x" onchange="updateDecoder();">
+          HM330x
+        </label>
+        <label>
           <input type="checkbox" value="ds18b20" onchange="updateDecoder();">
           DS18B20
         </label>
@@ -104,6 +108,11 @@
         "sht21": [
           { "name": "temperature", "type": "Int32", "factor": 100, "multi": false },
           { "name": "humidity", "type": "Int32", "factor": 100, "multi": false },
+        ],
+        "hm330x": [
+          { "name": "pm1", "type": "UInt16", "factor": 1, "multi": false },
+          { "name": "pm2_5", "type": "UInt16", "factor": 1, "multi": false },
+          { "name": "pm10", "type": "UInt16", "factor": 1, "multi": false },
         ],
         "ds18b20": [
           { "name": "t", "type": "Int16", "factor": 100, "multi": true },

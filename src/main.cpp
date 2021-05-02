@@ -36,6 +36,9 @@
 #ifdef HAS_SHT21
   #include <SHT21.h>
 #endif
+#ifdef HAS_HM330x
+  #include <HM330x.h>
+#endif
 #ifdef HAS_DS18B20
   #include <DS18B20.h>
 #endif
@@ -332,6 +335,10 @@ void setup()
   #endif
   #ifdef HAS_SHT21
     sensors[i] = new SHT21();
+    i++;
+  #endif
+  #ifdef HAS_HM330x
+    sensors[i] = new HM330x();
     i++;
   #endif
   #ifdef HAS_DS18B20
