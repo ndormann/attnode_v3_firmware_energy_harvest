@@ -2,6 +2,7 @@
 #define BME280_H
 
 #include "../../include/attsensor.h"
+#include "../../include/debug.h"
 
 #define BME280_I2CADDR 0x76
 

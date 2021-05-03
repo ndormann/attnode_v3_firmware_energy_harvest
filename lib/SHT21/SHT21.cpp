@@ -53,6 +53,8 @@ uint16_t SHT21::sensorRead(uint8_t command) {
 }
 
 uint8_t SHT21::getSensorData(char *payload, uint8_t startbyte) {
+  DEBUG_PRINTLN("SHT21::getSensorData");
+  
   // Temperature
   int32ToPayload((int32_t)((-46.85 + 175.72 / 65536.0 * (float)(sensorRead(SHT21_TEMPHOLD)))*100), payload, startbyte);
   // Humidity

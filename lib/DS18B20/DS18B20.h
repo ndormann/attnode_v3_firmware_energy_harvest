@@ -28,6 +28,7 @@
 #define DS18B20_H
 
 #include "../../include/attsensor.h"
+#include "../../include/debug.h"
 #include <OneWire.h>
 
 // Sensor Resolutions

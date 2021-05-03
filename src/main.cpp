@@ -13,8 +13,8 @@
 
 // Include Config and Helpers
 #include "config.h"
-#include "debug.h"
-#include "attsensor.h"
+#include <debug.h>
+#include <attsensor.h>
 
 // Include All Sensors Activated in config.h
 #ifndef HAS_NO_SENSOR
@@ -189,11 +189,14 @@ void onEvent(ev_t ev) {
       }
 
       // Got to sleep for specified Time
-      DEBUG_PRINTLN("Going to Sleep");
+      DEBUG_PRINT("Going to Sleep for ");
+      DEBUG_PRINT(sleep_time*64);
+      DEBUG_PRINTLN(" Seconds");
       for (uint16_t i = 0; i < sleep_time*2; i++) {
         // Cancel sleep Cycle if Button was Pressed
         #ifdef BTN_PIN
         if (btn_pressed  && digitalRead(BTN_PIN) == HIGH) {
+          DEBUG_PRINTLN("Button Pressed, waking up");
           i = sleep_time*2;
           btn_pressed = 0;
         } else {

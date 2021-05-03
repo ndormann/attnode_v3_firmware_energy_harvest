@@ -41,6 +41,8 @@ SCD30::SCD30(uint8_t interval, bool selfcalib) {
 // Initialize the Sensor, Enable Constant Measurement, Set Autocalibration and Interval
 void SCD30::initialize(void) {
   uint8_t fw[3];
+
+  DEBUG_PRINTLN("SCD30::initialize");
   // Soft Reset
   reset();
   // Send Get Firmware, Workaround to Avoid First Real Command to be Ignored
@@ -63,6 +65,9 @@ void SCD30::initialize(void) {
 uint8_t SCD30::getSensorData(char *payload, uint8_t startbyte) {
   uint8_t ready[2] = {0};
   uint8_t data[18] = {0};
+
+  DEBUG_PRINTLN("SCD30::getSensorData");
+  
   // Check if Sensor Data is Available
   getBytes(SCD30_DATA_READY, ready, 2);
   if (ready[1] == 1){

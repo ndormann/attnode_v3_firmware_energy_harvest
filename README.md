@@ -16,6 +16,15 @@ Before programming a node, copy src/config.h.example to src/config.h and set the
 
 Programming is done using a [MicroUPDI Programmer](https://github.com/MCUdude/microUPDI), settings in platformio.ini are set to use it. For other pogrammer options see the PlatformIO Documentation
 
+## Debugging
+
+The firmware has the ability to produce some debug output via the Serial UART as long as there is no sensor using the UART. To enable it, uncomment the line -D DEBUG in platformio.ini. This will produce some debug output showing the state of the node. The following macros are available as a replacement for the normal Serial.print and Serial.println functions:
+
+    DEBUG_PRINT("Debug Output");
+    DEBUG_PRINTLN("Debug Output with Linebreak");
+
+These will only produce additional code in the firmware when the DEBUG-Flag is enabled, and will be entirely removed in the ouput binary if not. The macros work like the normal Serial.print* statements form the standard arduino functions.
+
 ## Payload Decoder
 
 You need to specify a Payload Decoder fitting for your configured Sensors for a Node. See payload/index.html in this repository. Open it in your Browser of Choice and select the enabled sensors. It will generate the Payload Decoder fitting for the choosen Sensors. You can also use the Online Version at [attno.de](https://www.attno.de/payload-generator)

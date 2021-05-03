@@ -5,6 +5,7 @@
 BME280::BME280() {}
 
 void BME280::getCalData() {
+  DEBUG_PRINTLN("BME280::getCalData");
   dig_T1 = read16_LE(0x88);
   dig_T2 = readS16_LE(0x8A);
   dig_T3 = readS16_LE(0x8C);
@@ -81,6 +82,8 @@ uint8_t BME280::getSensorData(char *payload, uint8_t startbyte) {
 
 	int32_t UP, UT, UH;
   int32_t rawP, rawT;
+
+  DEBUG_PRINTLN("BME280::geSensorData");
 
   // Trigger Measurement
  	// Set Sensor Config

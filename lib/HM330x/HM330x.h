@@ -28,6 +28,7 @@
 #define HM330x_H
 
 #include "../../include/attsensor.h"
+#include "../../include/debug.h"
 
 // Sensor I2C Address
 #define HM330x_ADDR     0x40

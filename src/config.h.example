@@ -27,15 +27,6 @@
 // #define BTN_PIN PIN_PC2
 
 /**************************************************************************************************************************
- * Enable Serial Debugging. Parameters for the Serial Port are  115200 Baud 8n1
- * By default the Firmware will output some messages about LoRa-Status and indicate sending
- * The Macros DEBUG_PRINT() and DEBUG_PRINTLN() can be used to produce debug output depending on this define
- * Please be aware that this will not work when a Serial Sensor like the SG112A/MH-Z19C or Sensair S8 ist used
- *************************************************************************************************************************/
-// #define DEBUG
-
-
-/**************************************************************************************************************************
  * Number of active Sensors (used as long as HAS_NO_SENSOR is not enabled)
  * Set to the correct number of enabled sensors below
  * Not doing so will lead to unpredictable results or not work at all

@@ -35,6 +35,8 @@ HM330x::HM330x() {};
 // Initialize the Sensor
 void HM330x::initialize(void) {
   uint8_t retryCount = 0;
+
+  DEBUG_PRINTLN("HM330x::initialize");
   // Send select command
   while (!sendCmd(HM330x_SELECT)) {
     if (retryCount++ >= 0) {
@@ -49,6 +51,8 @@ void HM330x::initialize(void) {
 uint8_t HM330x::getSensorData(char *payload, uint8_t startbyte) {
   uint8_t data[HM330x_DATA_LEN] = {0};
   uint16_t value = 0;
+
+  DEBUG_PRINTLN("HM330x::getSensorData");
 
   // Initialize Payload with 0s
   for (uint8_t i=startbyte; i < startbyte+6; i++)

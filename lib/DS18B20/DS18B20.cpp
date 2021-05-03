@@ -50,6 +50,7 @@ DS18B20::DS18B20(uint8_t owpin, uint8_t resbits = 12, bool para = false) {
 }
 
 void DS18B20::initialize(void){
+  DEBUG_PRINTLN("DS18B20::initialize");
   onewire->reset();
   onewire->reset_search();
   sensorcount = 0;
@@ -83,6 +84,8 @@ void DS18B20::setResolution(void) {
 uint8_t DS18B20::getSensorData(char *payload, uint8_t startbyte){
   uint8_t data[9];
   int16_t value;
+
+  DEBUG_PRINTLN("DS18B20::getSensorData");
 
   // Start Conversation on all Sensors
   onewire->reset();

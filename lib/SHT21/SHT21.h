@@ -28,6 +28,7 @@
 #define SHT21_H
 
 #include "../../include/attsensor.h"
+#include "../../include/debug.h"
 
 #define SHT21_I2CADDR    0x40
 
