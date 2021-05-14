@@ -405,17 +405,13 @@ void loop()
     // Press Button longer than 4 Seconds -> Start Sensor Calibration Routine (if applicable)
     unsigned long loop_millis = millis();
     if ((unsigned long)(loop_millis - btn_millis) >= 4000) {
-      #if WS2812B_NUM > 1
-        WS2812B_SETLED(1,153,0,153);
-      #endif
+      WS2812B_SETLED(0,153,0,153);
       BLINK_LED(3);
       delay(1000);
       for (uint8_t i=0; i<NUM_SENSORS; i++)
         sensors[i]->calibrate();
       BLINK_LED(1);
-      #if WS2812B_NUM > 1
-        WS2812B_SETLED(1,0,0,0);
-      #endif
+      WS2812B_SETLED(0,0,0,0);
     } else {
       delay(500);
     }
