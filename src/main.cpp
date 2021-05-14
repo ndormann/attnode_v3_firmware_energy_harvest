@@ -153,13 +153,17 @@ void onEvent(ev_t ev) {
       // Disable LinkCheck
       LMIC_setLinkCheckMode(0);
       BLINK_LED(2);
-      WS2812B_BLINK(1,0,127,0,1000);
+      #if WS2812B_NUM > 1
+        WS2812B_BLINK(1,0,127,0,1000);
+      #endif
       DEBUG_PRINTLN("OTAA Join Succeeded");
       break;
     case EV_TXCOMPLETE:
       // Check for Downlink
       DEBUG_PRINTLN("LoRa Packet Sent");
-      WS2812B_BLINK(1,0,127,0,1000);
+      #if WS2812B_NUM > 1
+        WS2812B_BLINK(1,0,127,0,1000);
+      #endif
       if ((int)LMIC.dataLen > 0) {
         // Check for Downlinks
         // Function based in Ports:
@@ -177,7 +181,9 @@ void onEvent(ev_t ev) {
               DEBUG_PRINTLN(tmpslp);
               sleep_time = tmpslp;
               EEPROM.put(ADDR_SLP, tmpslp);
-              WS2812B_BLINK(1,0,0,127,250);
+              #if WS2812B_NUM > 1
+                WS2812B_BLINK(1,0,0,127,250);
+              #endif
             }
             break;
           case 2:
@@ -384,7 +390,9 @@ void setup()
   DEBUG_PRINTLN("Setup Finished");
   
   // Set WS2812B to Yellow for "Joining" (if enabled)
-  WS2812B_SETLED(1,127,127,0);
+  #if WS2812B_NUM > 1
+    WS2812B_SETLED(1,127,127,0);
+  #endif
   // Schedule First Send (Triggers OTAA Join as well)
   do_send(&sendjob);
 }
@@ -397,13 +405,17 @@ void loop()
     // Press Button longer than 4 Seconds -> Start Sensor Calibration Routine (if applicable)
     unsigned long loop_millis = millis();
     if ((unsigned long)(loop_millis - btn_millis) >= 4000) {
-      WS2812B_SETLED(1,153,0,153);
+      #if WS2812B_NUM > 1
+        WS2812B_SETLED(1,153,0,153);
+      #endif
       BLINK_LED(3);
       delay(1000);
       for (uint8_t i=0; i<NUM_SENSORS; i++)
         sensors[i]->calibrate();
       BLINK_LED(1);
-      WS2812B_SETLED(1,0,0,0);
+      #if WS2812B_NUM > 1
+        WS2812B_SETLED(1,0,0,0);
+      #endif
     } else {
       delay(500);
     }
