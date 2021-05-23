@@ -35,8 +35,13 @@ HM330x::HM330x() {};
 // Initialize the Sensor
 void HM330x::initialize(void) {
   uint8_t retryCount = 0;
-
   DEBUG_PRINTLN("HM330x::initialize");
+  
+  // Wait for Sensor to get Ready
+  DEBUG_PRINTLN("HM330x::initialize Waiting for Sensor Startup");
+  delay(30000);
+
+  DEBUG_PRINTLN("HM330x::initialize Trying to send Select");
   // Send select command
   while (!sendCmd(HM330x_SELECT)) {
     if (retryCount++ >= 10) {
@@ -58,7 +63,7 @@ uint8_t HM330x::getSensorData(char *payload, uint8_t startbyte) {
 
   // Initialize Payload with 0s
   for (uint8_t i=startbyte; i < startbyte+6; i++)
-    payload[i] = 0;
+    payload[i] = 0xFF;
 
   // Get Data from the Sensors
   Wire.requestFrom(HM330x_ADDR, HM330x_DATA_LEN);
@@ -78,6 +83,9 @@ uint8_t HM330x::getSensorData(char *payload, uint8_t startbyte) {
         startbyte += 2;
       }
       return startbyte;
+    } else {
+      for (uint8_t i=startbyte; i < startbyte+6; i++)
+        payload[i] = 0xEE;
     }
   }
   return startbyte+6;
