@@ -39,10 +39,12 @@ void HM330x::initialize(void) {
   DEBUG_PRINTLN("HM330x::initialize");
   // Send select command
   while (!sendCmd(HM330x_SELECT)) {
-    if (retryCount++ >= 0) {
+    if (retryCount++ >= 10) {
+      DEBUG_PRINTLN("HM330x::initialize Select Failed!");
       return;
     } else {
-      delay(100);
+      delay(500);
+      DEBUG_PRINTLN("HM330x::initialize Retrying Select...");
     }
   }
 }
@@ -61,8 +63,13 @@ uint8_t HM330x::getSensorData(char *payload, uint8_t startbyte) {
   // Get Data from the Sensors
   Wire.requestFrom(HM330x_ADDR, HM330x_DATA_LEN);
   if (Wire.available()) {
-    for (uint8_t i = 0; i<HM330x_DATA_LEN; i++)
+    DEBUG_PRINT("HM330x::getSensorData reading I2C:")
+    for (uint8_t i = 0; i<HM330x_DATA_LEN; i++){
       data[i] = Wire.read();
+      DEBUG_PRINT(" 0x");
+      DEBUG_PRINT(data[i], HEX);
+    }
+    DEBUG_PRINTLN("");
 
     if (calcSum(data) == data[HM330x_DATA_LEN-1]) {
       for (uint8_t pos = 5; pos<8; pos++) {
@@ -78,6 +85,8 @@ uint8_t HM330x::getSensorData(char *payload, uint8_t startbyte) {
 
 // Send only a Command
 bool HM330x::sendCmd(uint8_t cmd) {
+  DEBUG_PRINT("HM330x::sendCmd: 0x")
+  DEBUG_PRINTLN(cmd, HEX);
   Wire.beginTransmission(HM330x_ADDR);
   Wire.write(cmd);
   return Wire.endTransmission();
@@ -89,6 +98,8 @@ uint8_t HM330x::calcSum(uint8_t bytes[]) {
   for (int i = 0; i < HM330x_DATA_LEN - 1; i++) {
     checksum += bytes[i];
   }
+  DEBUG_PRINT("HM330x::calcSum: 0x");
+  DEBUG_PRINTLN(checksum, HEX);
   return checksum;
 }
 
