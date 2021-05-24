@@ -220,6 +220,20 @@ void onEvent(ev_t ev) {
 }
 
 // Get Battery Voltage
+#ifdef  EXT_BAT_PIN
+uint16_t readSupplyVoltage() {
+  pinMode(EXT_BAT_PIN, INPUT);
+  analogReference(INTERNAL2V5);
+  ADC0.CTRLD = ADC_INITDLY_DLY256_gc;
+  ADC0_CTRLB = ADC_SAMPNUM_ACC64_gc;
+  uint16_t reading = analogRead(EXT_BAT_PIN);
+  reading = reading/64;
+  DEBUG_PRINT("ADC Reading: ");
+  DEBUG_PRINTLN(reading);
+  reading = (int16_t)(reading * (2500/1024.0) * EXT_BAT_RATIO);
+  return reading;
+}
+#else
 uint16_t readSupplyVoltage() { //returns value in millivolts to avoid floating point
   uint16_t temp = 0;
   analogReference(VDD);
@@ -233,6 +247,7 @@ uint16_t readSupplyVoltage() { //returns value in millivolts to avoid floating p
   reading = intermediate / temp;
   return reading;
 }
+#endif
 
 // Read Sensors and Send Data
 void do_send(osjob_t* j) {
@@ -304,6 +319,10 @@ void setup()
    // Disable unused Pins (for power saving)
   for (int i = 0; i < (sizeof(disabledPins) / sizeof(disabledPins[0])) - 1; i++)
     pinMode(disabledPins[i], INPUT_PULLUP);
+
+  #ifdef EXT_BAT_PIN
+    
+  #endif
 
   // Setup WS2812B LEDs
   #ifdef WS2812B_PIN

@@ -27,6 +27,17 @@
 // #define BTN_PIN PIN_PC2
 
 /**************************************************************************************************************************
+ * External Battery Monitoring - If EXT_BAT_PIN is set to an analog pin of the ATTiny (e.g.  PB4 or PB5), it will be used
+ * to read the Battery Voltage instead of the internal supply voltage. This can e.g. be used to monitor the voltage of an
+ * LiPo/LiIon cell connected to the Node via the PowerPack. The Devider should not put out more than 2.5V at the
+ * measurement point. Choose high resistor values (e.g. 2x 1MOhm for LiPo/LiIon) to minimize current drain through the
+ * resistors. The Send voltage will be measured voltage at the pin times EXT_BAT_RATIO.
+ *************************************************************************************************************************/
+// #define EXT_BAT_PIN PIN_PB5
+// #define EXT_BAT_RATIO 2
+
+
+/**************************************************************************************************************************
  * Number of active Sensors (used as long as HAS_NO_SENSOR is not enabled)
  * Set to the correct number of enabled sensors below
  * Not doing so will lead to unpredictable results or not work at all
