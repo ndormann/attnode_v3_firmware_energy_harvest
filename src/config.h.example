@@ -66,10 +66,16 @@
  * Sensor Configuration
  * Change according to your Needs
  *************************************************************************************************************************/
+
 // Pin for the OneWire Bus
 #define DS18B20_PIN PIN_PC3
 // A/D Resolution of the DS18B20 (9-12 Bit)
 #define DS18B20_RES 12
+
+// Connect a free pin on the ATTNode to the SET-Pin on the HM3301-Board
+// Set HM330x_SLLEP_PIN to the choosen pin to enable the Sleep-Mode of the HM3301. 
+// Setting it to 0 disables Sleep Mode
+#define HM330x_SLEEP_PIN 0
 
 /**************************************************************************************************************************
  * How many minutes to sleep between Measuring/Sending

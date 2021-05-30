@@ -30,13 +30,21 @@
 #include "HM330x.h"
 
 // Default Constructor
-HM330x::HM330x() {};
+HM330x::HM330x(uint8_t sp = 0) {
+  sleep_pin = sp;
+};
 
 // Initialize the Sensor
 void HM330x::initialize(void) {
   uint8_t retryCount = 0;
   DEBUG_PRINTLN("HM330x::initialize");
   
+  // Enable Sleep Mode if Pin is Configured
+  if (sleep_pin > 0) {
+    pinMode(sleep_pin, OUTPUT);
+    digitalWrite(sleep_pin, HIGH);
+  }
+
   // Wait for Sensor to get Ready
   DEBUG_PRINTLN("HM330x::initialize Waiting for Sensor Startup");
   delay(30000);
@@ -60,6 +68,12 @@ uint8_t HM330x::getSensorData(char *payload, uint8_t startbyte) {
   uint16_t value = 0;
 
   DEBUG_PRINTLN("HM330x::getSensorData");
+  
+  // Enable Sensor and Wait for it to Settle
+  if (sleep_pin > 0) {
+    digitalWrite(sleep_pin, HIGH);
+    delay(30000);
+  }
 
   // Initialize Payload with 0s
   for (uint8_t i=startbyte; i < startbyte+6; i++)
@@ -82,11 +96,17 @@ uint8_t HM330x::getSensorData(char *payload, uint8_t startbyte) {
         uint16ToPayload(value, payload, startbyte);
         startbyte += 2;
       }
+      if (sleep_pin > 0) {
+        digitalWrite(sleep_pin, LOW);
+      }
       return startbyte;
     } else {
       for (uint8_t i=startbyte; i < startbyte+6; i++)
         payload[i] = 0xEE;
     }
+  }
+  if (sleep_pin > 0) {
+    digitalWrite(sleep_pin, LOW);
   }
   return startbyte+6;
 }

@@ -38,13 +38,13 @@
 
 class HM330x : public AttSensor {
   private:
+    uint8_t  sleep_pin = 0;
     bool     sendCmd(uint8_t cmd);
     uint8_t  calcSum(uint8_t bytes[]);
     uint16_t bytesToUint16(uint8_t bytes[], uint8_t pos);
 
   public:
-    HM330x();
-    HM330x(uint8_t interval, bool selfcalib);
+    HM330x(uint8_t sp = 0);
     void initialize(void);
     void calibrate(void) {};
     uint8_t numBytes(void) {return 6;};

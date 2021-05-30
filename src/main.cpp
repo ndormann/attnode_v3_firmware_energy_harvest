@@ -366,7 +366,7 @@ void setup()
     i++;
   #endif
   #ifdef HAS_HM330x
-    sensors[i] = new HM330x();
+    sensors[i] = new HM330x(HM330x_SLEEP_PIN);
     i++;
   #endif
   #ifdef HAS_DS18B20
