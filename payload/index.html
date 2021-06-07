@@ -74,6 +74,10 @@
           HM330x
         </label>
         <label>
+          <input type="checkbox" value="brightness" onchange="updateDecoder();">
+          Brightness
+        </label>
+        <label>
           <input type="checkbox" value="ds18b20" onchange="updateDecoder();">
           DS18B20
         </label>
@@ -113,6 +117,9 @@
           { "name": "pm1", "type": "UInt16", "factor": 1, "multi": false },
           { "name": "pm2_5", "type": "UInt16", "factor": 1, "multi": false },
           { "name": "pm10", "type": "UInt16", "factor": 1, "multi": false },
+        ],
+        "brightness": [
+          { "name": "brightness", "type": "UInt16", "factor": 1, "multi": false },
         ],
         "ds18b20": [
           { "name": "t", "type": "Int16", "factor": 100, "multi": true },

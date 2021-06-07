@@ -60,6 +60,7 @@
 // #define HAS_BME280
 // #define HAS_SHT21
 // #define HAS_HM330x
+// #define HAS_BRIGHTNESS
 // #define HAS_DS18B20
 
 /**************************************************************************************************************************
@@ -76,6 +77,12 @@
 // Set HM330x_SLLEP_PIN to the choosen pin to enable the Sleep-Mode of the HM3301. 
 // Setting it to 0 disables Sleep Mode
 #define HM330x_SLEEP_PIN 0
+
+// LED connected between 2 pins, switched in reverse direction for brightness measurement
+// BRIGHTNESS_LED_A -> LED Anode
+// BRIGHTNESS_LED_C -> LED Cathode
+#define BRIGHTNESS_LED_A PIN_PC0
+#define BRIGHTNESS_LED_C PIN_PC1
 
 /**************************************************************************************************************************
  * How many minutes to sleep between Measuring/Sending

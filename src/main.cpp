@@ -39,6 +39,9 @@
 #ifdef HAS_HM330x
   #include <HM330x.h>
 #endif
+#ifdef HAS_BRIGHTNESS
+  #include <Brightness.h>
+#endif
 #ifdef HAS_DS18B20
   #include <DS18B20.h>
 #endif
@@ -367,6 +370,10 @@ void setup()
   #endif
   #ifdef HAS_HM330x
     sensors[i] = new HM330x(HM330x_SLEEP_PIN);
+    i++;
+  #endif
+  #ifdef HAS_BRIGHTNESS
+    sensors[i] = new Brightness(BRIGHTNESS_LED_A, BRIGHTNESS_LED_C);
     i++;
   #endif
   #ifdef HAS_DS18B20
