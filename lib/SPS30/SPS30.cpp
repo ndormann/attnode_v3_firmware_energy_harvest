@@ -47,12 +47,23 @@ uint8_t SPS30::getSensorData(char *payload, uint8_t startbyte) {
     write(SPS30_READ_MEASUREMENT);
     Wire.requestFrom(SPS30_I2C_ADDRESS, 30);
     if (Wire.available() != 0) {
-      Wire.readBytes(data, 30);
       for (uint8_t i = 0; i < 30; i++)
         data[i] = 0xFE;
+      
+      Wire.readBytes(data, 30);
+
+      // DEBUG OUTPUT
+      DEBUG_PRINT("SPS30 I2C DATA: ")
+      for (uint8_t i = 0; i < 30; i++) {
+        DEBUG_PRINT("0x");
+        DEBUG_PRINT (data[i]);
+        DEBUG_PRINT(", ");
+      }
+        
+      DEBUG_PRINTLN("");
 
       // PM1.0
-      if (data[3] == calcCRC(data, 2))
+      if (data[2] == calcCRC(data, 2))
         massPM1 = data[0] << 8 | data[1];
 
       // PM2.5
