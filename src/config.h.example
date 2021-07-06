@@ -59,6 +59,7 @@
 // #define HAS_SCD30
 // #define HAS_BME280
 // #define HAS_SHT21
+// #define HAS_SPS30
 // #define HAS_HM330x
 // #define HAS_BRIGHTNESS
 // #define HAS_DS18B20

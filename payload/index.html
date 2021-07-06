@@ -70,6 +70,10 @@
           SHT21
         </label>
         <label>
+          <input type="checkbox" value="sps30" onchange="updateDecoder();">
+          SPS30
+        </label>
+        <label>
           <input type="checkbox" value="hm330x" onchange="updateDecoder();">
           HM330x
         </label>
@@ -112,6 +116,13 @@
         "sht21": [
           { "name": "temperature", "type": "Int32", "factor": 100, "multi": false },
           { "name": "humidity", "type": "Int32", "factor": 100, "multi": false },
+        ],
+        "sps30": [
+          { "name": "pm1", "type": "UInt16", "factor": 1, "multi": false },
+          { "name": "pm2_5", "type": "UInt16", "factor": 1, "multi": false },
+          { "name": "pm4", "type": "UInt16", "factor": 1, "multi": false },
+          { "name": "pm10", "type": "UInt16", "factor": 1, "multi": false },
+          { "name": "typPMsize", "type": "UInt16", "factor": 1, "multi": false },
         ],
         "hm330x": [
           { "name": "pm1", "type": "UInt16", "factor": 1, "multi": false },
