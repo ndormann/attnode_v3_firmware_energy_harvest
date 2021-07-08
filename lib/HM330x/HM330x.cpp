@@ -46,8 +46,11 @@ void HM330x::initialize(void) {
   }
 
   // Wait for Sensor to get Ready
-  DEBUG_PRINTLN("HM330x::initialize Waiting for Sensor Startup");
-  delay(30000);
+  if (sleep_pin == 0) {
+    DEBUG_PRINTLN("HM330x::initialize Waiting for Sensor Startup");
+    delay(30000);
+  }
+
 
   DEBUG_PRINTLN("HM330x::initialize Trying to send Select");
   // Send select command
@@ -65,46 +68,58 @@ void HM330x::initialize(void) {
 // Read Data From Sensor and Put Them Into the Payload Array
 uint8_t HM330x::getSensorData(char *payload, uint8_t startbyte) {
   uint8_t data[HM330x_DATA_LEN] = {0};
-  uint16_t value = 0;
+  uint16_t values[3] = { 0xEEEE, 0xEEEE, 0xEEEE };
 
   DEBUG_PRINTLN("HM330x::getSensorData");
   
   // Enable Sensor and Wait for it to Settle
   if (sleep_pin > 0) {
     digitalWrite(sleep_pin, HIGH);
+    DEBUG_PRINTLN("HM330x::getSensorData Waiting for Stable Values after Sleep");
     delay(30000);
+    sendCmd(HM330x_SELECT);
   }
 
   // Initialize Payload with 0s
   for (uint8_t i=startbyte; i < startbyte+6; i++)
     payload[i] = 0xFF;
 
-  // Get Data from the Sensors
-  Wire.requestFrom(HM330x_ADDR, HM330x_DATA_LEN);
-  if (Wire.available()) {
-    DEBUG_PRINT("HM330x::getSensorData reading I2C:")
-    for (uint8_t i = 0; i<HM330x_DATA_LEN; i++){
-      data[i] = Wire.read();
-      DEBUG_PRINT(" 0x");
-      DEBUG_PRINT(data[i], HEX);
-    }
-    DEBUG_PRINTLN("");
+  bool    dataok = false;
+  uint8_t tries  = 5;
 
-    if (calcSum(data) == data[HM330x_DATA_LEN-1]) {
-      for (uint8_t pos = 5; pos<8; pos++) {
-        value = bytesToUint16(data, pos);
-        uint16ToPayload(value, payload, startbyte);
-        startbyte += 2;
+  while (!dataok && tries > 0) {
+    DEBUG_PRINT("HM330x::getSensorData reading I2C Try ");
+    DEBUG_PRINTLN(6-tries);
+    // Get Data from the Sensors
+    Wire.requestFrom(HM330x_ADDR, HM330x_DATA_LEN);
+    if (Wire.available()) {
+      DEBUG_PRINT("HM330x::getSensorData I2C data: 0x")
+      for (uint8_t i = 0; i<HM330x_DATA_LEN; i++){
+        data[i] = Wire.read();
+        DEBUG_PRINT(data[i], HEX);
+        DEBUG_PRINT(" ");
       }
-      if (sleep_pin > 0) {
-        digitalWrite(sleep_pin, LOW);
+      DEBUG_PRINTLN("");
+
+      if (calcSum(data) == data[HM330x_DATA_LEN-1]) {
+        for (uint8_t pos = 5; pos<8; pos++) {
+          values[pos-5]= bytesToUint16(data, pos);
+        }
+        dataok = true;
+      } else {
+        DEBUG_PRINTLN("HM330x::getSensorData Checksum Error")
+        delay(2000);
+        tries--;
       }
-      return startbyte;
     } else {
-      for (uint8_t i=startbyte; i < startbyte+6; i++)
-        payload[i] = 0xEE;
+      DEBUG_PRINTLN("HM330x::getSensorData I2C Not Ready")
+      delay(2000);
+      tries--;
     }
   }
+  uint16ToPayload(values[0], payload, startbyte);
+  uint16ToPayload(values[1], payload, startbyte+2);
+  uint16ToPayload(values[2], payload, startbyte+4);
   if (sleep_pin > 0) {
     digitalWrite(sleep_pin, LOW);
   }
