@@ -27,69 +27,90 @@
 #include <Arduino.h>
 #include "SPS30.h"
 
-SPS30::SPS30() {
-}
-
-
+// Read Measurements from Sensor and put them into the Paylaod
 uint8_t SPS30::getSensorData(char *payload, uint8_t startbyte) {
-  uint8_t data[30];
-  for (uint8_t i = 0; i < 30; i++)
-    data[i] = 0xFF;
-  
-  uint16_t massPM1, massPM25, massPM4, massPM10, typPM;
+  // Buffer to hold the raw I2C Return
+  uint8_t  data[30]; 
+  // Array with calculated Values.
+  // Predefined with 0xEEEE to recognize Read Errors in the Payload
+  uint16_t values[5] = {0xEEEE, 0xEEEE, 0xEEEE, 0xEEEE, 0xEEEE};
+
+  // Wakeup Sensor from Sleep
+  DEBUG_PRINTLN("SPS30::getSensorData - Wake Up Sensor");
+  Wire.beginTransmission(SPS30_I2C_ADDRESS);
+  Wire.endTransmission();
+  delay(50);
+  write(SPS30_WAKEUP);
+  delay(50);
 
   // Start Measuring, Integer Output
+  DEBUG_PRINTLN("SPS30::getSensorData - StartMeasurement");
   write(SPS30_START_MEASUREMENT, 0x0500);
-  // Wait for Stable Values (max 30s according to datasheet)
-  delay(30000);
+  // Wait for Stable Values
+  DEBUG_PRINTLN("SPS30::getSensorData - WaitForStabilize");
+  delay(SPS30_STABILIZE_TIME);
 
-  if (hasData()) {
-    write(SPS30_READ_MEASUREMENT);
-    Wire.requestFrom(SPS30_I2C_ADDRESS, 30);
-    if (Wire.available() != 0) {
-      for (uint8_t i = 0; i < 30; i++)
-        data[i] = 0xFE;
-      
-      Wire.readBytes(data, 30);
+  bool    dataok = false;
+  uint8_t tries = 5;
 
-      // DEBUG OUTPUT
-      DEBUG_PRINT("SPS30 I2C DATA: ")
-      for (uint8_t i = 0; i < 30; i++) {
-        DEBUG_PRINT("0x");
-        DEBUG_PRINT (data[i]);
-        DEBUG_PRINT(", ");
-      }
+  // Retry up to 5 times to get a Valid Measurement from the Sensor
+  while (!dataok && tries > 0) {
+    DEBUG_PRINT("SPS30::getSensorData - Reading Sensor Data, Try ");
+    DEBUG_PRINTLN(6-tries);
+    if (hasData()) {
+      write(SPS30_READ_MEASUREMENT);
+      Wire.requestFrom(SPS30_I2C_ADDRESS, 30);
+      if (Wire.available() != 0) { 
+        Wire.readBytes(data, 30);
+
+        DEBUG_PRINT("SPS30::getSensorData - I2C-Data: ");
+        DEBUG_PRINTARR(data);
+        DEBUG_PRINTLN("");
+
+        // Get Values for PM1.0, 2.5, 4 and 10 in Order
+        dataok = true;
+        for (uint8_t i=0; i<4; i++)
+          if (data[(i*3)+2] == calcCRC(data+(i*3), 2)) {
+            values[i] = data[i*3] << 8 | data[(i*3)+1]; // Create uint16_t from Bytes
+          } else {
+            dataok = false; // Set false on Checksum Error
+          }
         
-      DEBUG_PRINTLN("");
-
-      // PM1.0
-      if (data[2] == calcCRC(data, 2))
-        massPM1 = data[0] << 8 | data[1];
-
-      // PM2.5
-      if (data[5] == calcCRC(data+3, 2))
-        massPM25 = data[3] << 8 | data[4];
-      
-      // PM4
-      if (data[8] == calcCRC(data+6, 2))
-        massPM4 = data[6] << 8 | data[7];
-      
-      // PM10
-      if (data[11] == calcCRC(data+9, 2))
-        massPM10 = data[9] << 8 | data[10];
-      
-      // Typical Size
-      if (data[29] == calcCRC(data+27, 2))
-        typPM = data[27] << 8 | data[28];
+        // Get Typical Particle size
+        if (data[29] == calcCRC(data+27, 2)) {
+          values[4] = data[27] << 8 | data[28]; // Create uint16_t from Bytes
+        } else {
+          dataok = false; // Set false on Checksum Error
+        }
+        
+        if (!dataok) {
+          // If a Checksum error occured
+          DEBUG_PRINTLN("SPS30::getSensorData - CheckSum Error");
+          tries--;
+          delay(2000);
+        }
+      } else {
+        // No I2C Data Available
+        DEBUG_PRINTLN("SPS30::getSensorData - Error, no I2C Data available");
+        tries--;
+        delay(2000);
+      }
+    } else {
+      // No Data Ready from Sensor
+      DEBUG_PRINTLN("SPS30::getSensorData - Error, Sensor Data not Ready");
+      tries--;
+      delay(2000);
     }
   }
+  DEBUG_PRINTLN("SPS30::getSensorData - StopMeasurement");
   write(SPS30_STOP_MEASUREMENT);
-
-  uint16ToPayload(massPM1, payload, startbyte);
-  uint16ToPayload(massPM25, payload, startbyte+2);
-  uint16ToPayload(massPM4, payload, startbyte+4);
-  uint16ToPayload(massPM10, payload, startbyte+6);
-  uint16ToPayload(typPM, payload, startbyte+8);
+  delay(50);
+  DEBUG_PRINTLN("SPS30::getSensorData - SensorSleep");
+  write(SPS30_SLEEP);
+  
+  // Put the Values into the Payload Array
+  for (uint8_t i=0; i<5; i++)
+    uint16ToPayload(values[i], payload, startbyte+(i*2));
 }
 
 // Check if Sensor has Data
@@ -114,6 +135,7 @@ uint16_t SPS30::readReg(uint16_t regAddr) {
   return(0);
 }
 
+// Write a 16 Bit Command without Parameters
 bool SPS30::write(uint16_t cmd) {
   Wire.beginTransmission(SPS30_I2C_ADDRESS);
   Wire.write(cmd >> 8);
@@ -123,6 +145,7 @@ bool SPS30::write(uint16_t cmd) {
   return(true);
 }
 
+// Write a 16Bit Command with 16Bit Parameters
 bool SPS30::write(uint16_t cmd, uint16_t arg){
   uint8_t crcdata[2];
   crcdata[0] = arg >> 8;

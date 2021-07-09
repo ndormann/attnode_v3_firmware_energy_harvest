@@ -32,18 +32,21 @@
 #include "../../include/debug.h"
 
 // I2C Address
-#define SPS30_I2C_ADDRESS 0x69
+#define SPS30_I2C_ADDRESS    0x69
+#define SPS30_STABILIZE_TIME 30000
 
 // I2C Commands and Registers
-#define SPS30_START_MEASUREMENT 0x0010
-#define SPS30_STOP_MEASUREMENT 0x0104
-#define SPS30_GET_DATA_READY 0x0202
-#define SPS30_READ_MEASUREMENT 0x0300
+#define SPS30_START_MEASUREMENT   0x0010
+#define SPS30_STOP_MEASUREMENT    0x0104
+#define SPS30_GET_DATA_READY      0x0202
+#define SPS30_READ_MEASUREMENT    0x0300
 #define SPS30_AUTO_CLEAN_INTERVAL 0x8004
-#define SPS30_START_FAN_CLEANING 0x5607
-#define SPS30_READ_ARTICLE_CODE 0xD025
-#define SPS30_READ_SERIAL_NUMBER 0xD033
-#define SPS30_DEVICE_RESET 0xD304
+#define SPS30_START_FAN_CLEANING  0x5607
+#define SPS30_READ_ARTICLE_CODE   0xD025
+#define SPS30_READ_SERIAL_NUMBER  0xD033
+#define SPS30_DEVICE_RESET        0xD304
+#define SPS30_SLEEP               0x1001
+#define SPS30_WAKEUP              0x1103
 
 class SPS30 : public AttSensor {
   private:
@@ -54,11 +57,11 @@ class SPS30 : public AttSensor {
     bool write(uint16_t cmd, uint16_t arg);
   
   public:
-    SPS30();
-    uint8_t getSensorData(char *payload, uint8_t startbyte);
-    void calibrate(void) {};
-    void initialize(void) {};
-    uint8_t numBytes(void) { return 10; };
+    SPS30() {};
+    uint8_t getSensorData(char *payload, uint8_t startbyte) override;
+    void calibrate(void) override {};
+    void initialize(void) override {} ;
+    uint8_t numBytes(void) override { return 10; };
 };
 
 #endif
